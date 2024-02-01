@@ -12,6 +12,10 @@ void pressButton();
 void handleRootPath();
 void handleConfigurePath();
 void handleUpgradePath();
+void handleFailurePath();
+void handleSuccessPath();
+void handleTftUploadPath();
+void updateConfig();
 
 
 /***************/
