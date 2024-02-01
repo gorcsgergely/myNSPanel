@@ -1,6 +1,6 @@
 # myNSPanel
 
-myNSPanel is a custom made small stand-alone home automation system, intended for controlling venetian blinds with tilt, shutters and other similar covers. It does not require Home Assistant or any other external component.ó and it is easy to repurpose for other kind of automation tasks.
+myNSPanel is a custom made small stand-alone home automation system, intended for controlling venetian blinds with tilt, shutters and other similar covers. It does not require Home Assistant or any other external component and is easy to repurpose for other kind of automation tasks.
 
 The original design is for controlling up to 8 wifi blind controller devices but easily extendable. You can find the blind controller cod in a separate repository. It is made for ESP32 based Shelly Plus 2PM and Sonoff Dual R3 smart relays, but can be used with Sonoff 4CH or other ESP8266 based devices with some minor modifications.
 
@@ -11,9 +11,10 @@ myNSPanel is a full custom development project for the Sonoff NSPanel EU version
 + Display UI: Made with the Nextion Editor.
 
 **Main features:**
-+ Webserver to configure properties, see status, upload firmware and upload TFT file
++ Webserver to configure, see status, upload firmware and upload Nextion TFT file
 + MQTT broker to connect MQTT clients to, so you don't need Mosquito or anything else. It should be working fine with 10 clients at least.
 + mDNS
++ Arduino OTA to upload code wireless
 + Fallback SSID and password
 
 **Here is how to get NSPanel configured:**
