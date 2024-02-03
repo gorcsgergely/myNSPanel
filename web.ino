@@ -145,7 +145,7 @@ if (error) {
 }
 //server.send(200, "application/json", "{}");
 JsonArray blinds = doc["blinds"];
-for (int i=0; i<sizeof(blinds); i++)
+for (int i=0; i<blinds.size(); i++)
 {
   const char* blind_name=blinds[i];
   strncpy(web_cfg.blind_names[i], blind_name,15);
@@ -230,9 +230,6 @@ void readConfig() {
   root["auto_hold_buttons"] = web_cfg.auto_hold_buttons?"true":"false";
   root["wifi_ssid1"] = web_cfg.wifi_ssid1;
   root["wifi_password1"] = web_cfg.wifi_password1;
-  root["wifi_ssid2"] = web_cfg.wifi_ssid2;
-  root["wifi_password2"] = web_cfg.wifi_password2;
-  root["wifi_multi"] = web_cfg.wifi_multi?"true":"false";
   root["mqtt_server"] = web_cfg.mqtt_server;
   root["mqtt_user"] = web_cfg.mqtt_user;
   root["mqtt_password"] = web_cfg.mqtt_password;

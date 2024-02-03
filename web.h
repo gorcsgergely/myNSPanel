@@ -1,9 +1,8 @@
-#ifdef _WEB_
 #ifndef WEB_H
 #define WEB_H
 
 #include <WebServer.h>
-#include <HTTPUpdateServer.h>
+//#include <HTTPUpdateServer.h>
 
 void readMain();
 void readConfig();
@@ -759,5 +758,4 @@ const char FAILURE_page[] PROGMEM = R"#(
 </html>
 )#";
 
-#endif
 #endif

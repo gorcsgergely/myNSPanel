@@ -1,10 +1,11 @@
 #include "shutterControl.h"
 #include "config.h"
+#include "printf.h"
 
-void setCoverPosition(int selected_cover, int position){
+void setCoverPosition(int selected_cover, int position, configuration *cfg){
     char topic[40];
     char payload[10];
-    snprintf(topic,50,"blinds/%s/position", cfg.blind_names[selected_cover-1]);
+    snprintf(topic,50,"blinds/%s/position", cfg->blind_names[selected_cover-1]);
     snprintf(payload,10,"%d",position);
    // mqttClient.publish(topic, payload , false);
 }

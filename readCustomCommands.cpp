@@ -13,9 +13,9 @@
 #include "trigger.h"
 #endif
 
-#ifndef SHUTTER_CONTROL_H
 #include "shutterControl.h"
-#endif
+
+#include "config.h"
 
 // This was a part of the NextionListen(), but we seperated it, 
 // in order to make easier the modifications for it, especially in the case of a custom protocol
@@ -79,7 +79,7 @@ void EasyNex::readCommand(){
       dummy = _serial->read();  
       dummy = _serial->read();
       dummy = _serial->read();
-      setCoverPosition(selectedCover,coverPosition);
+      setCoverPosition(selectedCover,coverPosition,&cfg);
     break;  
 
     case 0xA1: //Cover tilt changed: 0x3D 0x09 0xA1 COVER_NUMBER 0x00 0x00 0x00 COVER_TILT 0x00 0x00 0x00

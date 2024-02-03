@@ -1,7 +1,5 @@
-
 //#define DEBUG 1
 #define ESP32 1
-
 
 #include <WiFi.h>  
 #include <ESPmDNS.h>  // Sends host name in WiFi setup
@@ -10,7 +8,7 @@
 #include <HTTPUpdateServer.h>
 
 #include <ArduinoJson.h>
-#include <math.h>
+//#include <math.h>
 #include "config.h"
 #include "crc.h"
 #include "web.h"
@@ -21,6 +19,7 @@
 #include "EasyNextionLibrary.h"  // Include EasyNextionLibrary
 
 #include "pitches.h"
+#include "printf.h"
 
 #include <PicoMQTT.h>
 
@@ -101,6 +100,7 @@ int noteDurations[] = {
   4, 4
 };
 
+char _blind_names_[NUMBER_OF_BLINDS][16] ={"blind1","blind2","blind3","blind4","blind5","blind6","blind7"}; 
 
 void playMelody() {
 // iterate over the notes of the melody:
