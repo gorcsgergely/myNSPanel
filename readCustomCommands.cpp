@@ -91,7 +91,7 @@ void EasyNex::readCommand(){
       dummy = _serial->read();  
       dummy = _serial->read();
       dummy = _serial->read();
-      setCoverTilt(selectedCover,coverTilt);
+      setCoverTilt(selectedCover,coverTilt, &cfg);
     break;  
 
     case 0xA2: //Cover up: 0x3D 0x06 0xA2 COVER_NUMBER 0x00 0x00 0x00

@@ -10,10 +10,10 @@ void setCoverPosition(int selected_cover, int position, configuration *cfg){
    // mqttClient.publish(topic, payload , false);
 }
 
-void setCoverTilt(int selected_cover, int tilt){
+void setCoverTilt(int selected_cover, int tilt, configuration *cfg){
     char topic[40];
     char payload[10];
-    snprintf(topic,40,"blinds/%s/tilt", cfg.blind_names[selected_cover-1]);
+    snprintf(topic,40,"blinds/%s/tilt", cfg->blind_names[selected_cover-1]);
     snprintf(payload,10,"%d",tilt);
     //mqttClient.publish(topic, payload , false);
 }

@@ -3,6 +3,6 @@
 #include "config.h"
 
 void setCoverPosition(int selected_cover, int position, configuration *cfg);
-void setCoverTilt(int selected_cover, int tilt);
+void setCoverTilt(int selected_cover, int tilt, configuration*cfg);
 
 #endif

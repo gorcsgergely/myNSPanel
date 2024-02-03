@@ -3,7 +3,7 @@
 
 #include <WiFi.h>  
 #include <ESPmDNS.h>  // Sends host name in WiFi setup
-#include <PubSubClient.h> // MQTT
+//#include <PubSubClient.h> // MQTT
 #include <ArduinoOTA.h>   // (Over The Air) update
 #include <HTTPUpdateServer.h>
 
