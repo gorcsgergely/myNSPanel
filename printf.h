@@ -40,6 +40,7 @@
 #define PRINTF_H_
 
 #define PRINTF_ALIAS_STANDARD_FUNCTION_NAMES 1
+#define PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS 0
 
 #ifdef __cplusplus
 # include <cstdarg>

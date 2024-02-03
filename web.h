@@ -531,9 +531,6 @@ function readConfig() {
     if (this.readyState == 4 && this.status == 200) {
       var resp= JSON.parse(this.responseText);
       document.getElementById("host_name").value = resp.host_name;
-      document.getElementById("count").value = "1";
-      document.getElementById("auto_hold_buttons").checked = resp.auto_hold_buttons=="true";
-      document.getElementById("tilt").checked = resp.tilt=="true";
       document.getElementById("wifi_ssid1").value = resp.wifi_ssid1;
       document.getElementById("wifi_password1").value = resp.wifi_password1;
       document.getElementById("mqtt_server").value = resp.mqtt_server;
@@ -565,17 +562,7 @@ function readConfig() {
          container.appendChild(input);
          } 
          document.getElementById("blind_name_"+b_name_string).value = resp.blind_names[i];
-      }
-
-      document.getElementById("Shutter1_duration_down").value = resp.Shutter1_duration_down;
-      document.getElementById("Shutter1_duration_up").value = resp.Shutter1_duration_up;
-      document.getElementById("Shutter1_duration_tilt").value = resp.Shutter1_duration_tilt;
-    
-      if (resp.tilt=="true")
-        disableStyle(".tilt");
-      else
-        enableStyle(".tilt");         
-            
+      }            
     }
   };  
   xhttp.open("GET", "readConfig", true);
@@ -591,16 +578,6 @@ function readConfig() {
 
 <section class="container">
   <label class="description" for="host_name">Host name</label> <input class="full" type="text" name="host_name" id="host_name" onchange="sendData(this.id,this.value);">
-</section>
-
-<h2>Shutter type</h2>
-<section class="container">
-  <input class="checkbox" type="checkbox" name="tilt" id="tilt" onchange="sendData(this.id,this.checked);"> <label class="description" for="tilt">Tilt</label>
-  <input class="checkbox" type="checkbox" name="auto_hold_buttons" id="auto_hold_buttons" onchange="sendData(this.id,this.checked);"> <label class="description" for="auto_hold_buttons">Auto hold buttons</label>
-  <label class="description" for="count"># of shutters:</label>
-  <select class="full" name="count" id="count" onchange="sendData(this.id,this.value);">
-    <option value="1">1</option>
-  </select>
 </section>
 
 <h2>WiFi</h2>
@@ -649,21 +626,7 @@ function readConfig() {
   <label class="description" for="subscribe_reboot">Reboot</label> <input class="full" type="text" maxlength="49" name="subscribe_reboot" id="subscribe_reboot" onchange="sendData(this.id,this.value);"></br>
   <label class="description" for="subscribe_reset">Reset</label> <input class="full" type="text" maxlength="49" name="subscribe_reset" id="subscribe_reset" onchange="sendData(this.id,this.value);"></br>
 </section>
-
-<h2>Parameters</h2>
-<section class="container">
-  <label class="first">Shutter 1</label>
-  
-  <label class="description">Duration down</label>
-  <div class="first"><input type="number" min="0" max="120000" name="Shutter1_duration_down" id="Shutter1_duration_down" onchange="sendData(this.id,this.value);"> ms</div>
-  
-  <label class="description">Duration up</label>
-  <div class="first"><input type="number" min="0" max="120000" name="Shutter1_duration_up" id="Shutter1_duration_up" onchange="sendData(this.id,this.value);"> ms</div>
-  
-  <label class="description tilt">Duration tilt</label>
-  <div class="first tilt"><input type="number" min="0" max="120000" name="Shutter1_duration_tilt" id="Shutter1_duration_tilt" onchange="sendData(this.id,this.value);"> ms</div>
-</section>
-  
+ 
 <br />
 
 <section class="commands">

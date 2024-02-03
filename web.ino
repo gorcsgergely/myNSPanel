@@ -149,7 +149,6 @@ for (int i=0; i<blinds.size(); i++)
 {
   const char* blind_name=blinds[i];
   strncpy(web_cfg.blind_names[i], blind_name,15);
-  lastCommand+=blind_name;
 }
 
 server.send(200, "application/json", "{}");
