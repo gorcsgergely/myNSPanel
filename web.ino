@@ -30,9 +30,6 @@ void handleFailurePath() {            //Handler for the rooth path
   
 }
 
-
-
-
 void handleConfigurePath() {            //Handler for the rooth path
    
   String html = CONFIGURE_page;
@@ -46,9 +43,9 @@ void readMain() {
   char buf1[25];
   char buf2[25];
   
-  DynamicJsonDocument root(500);   // normal 464
+  JsonDocument root;   // normal 464
 
-  JsonArray keys = root.createNestedArray("keys");
+  JsonArray keys = root["keys"].to<JsonArray>();
   keys.add("Pressed");
   keys.add(String(5));
  
@@ -223,7 +220,7 @@ void updateField() {
 
 void readConfig() {
   
-  DynamicJsonDocument root(1500);   // normal 1279 (but can configure longer strings, so leave it)
+  JsonDocument root;   // normal 1279 (but can configure longer strings, so leave it)
   root["host_name"] = web_cfg.host_name;
   root["tilt"] = web_cfg.tilt?"true":"false";
   root["auto_hold_buttons"] = web_cfg.auto_hold_buttons?"true":"false";
@@ -241,7 +238,7 @@ void readConfig() {
   root["subscribe_reboot"] = web_cfg.subscribe_reboot;
   root["subscribe_reset"] = web_cfg.subscribe_reset;
 
-  JsonArray blinds = root.createNestedArray("blind_names");
+  JsonArray blinds = root["blind_names"].to<JsonArray>();
   for (int i=0; i<NUMBER_OF_BLINDS;i++){
    blinds.add(web_cfg.blind_names[i]);
   }
