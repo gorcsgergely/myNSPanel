@@ -46,7 +46,7 @@ to
 ```
 
 ## Compiling it with Arduino IDE
-Create a new folder and copy all files in /src and /include into the new folder.
-Rename main.cpp to your_folder_name.ino
-Select ESP32 DEV Module as your board
-Install dependency: PicoMQTT and ArduinoJSON v7+ (Arduino OTA is not needed, it is using the out of the box library)
++ Create a new folder and copy all files in /src and /include into the new folder.
++ Rename main.cpp to your_folder_name.ino
++ Select ESP32 DEV Module as your board
++ Install dependency: PicoMQTT and ArduinoJSON v7+ (Arduino OTA is not needed, it is using the out of the box library)
