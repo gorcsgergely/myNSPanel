@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -5,9 +6,6 @@
 
 // Constants (default values, stored to EEPROM during the first run, can be configured from the web interface)
 const char _host_name_[] = "NSPanel";  // Has to be unique for each device
-
-//comment for covers with no tilting blades
-#define _tilt_ 1
 
 // filters out noise (100 ms)
 const boolean button_press_delay = true;   
@@ -27,22 +25,14 @@ const char _subscribe_calibrate_[] = "blinds/cover/calibrate";
 const char _subscribe_reset_[] = "blinds/cover/reset";
 const char _subscribe_reboot_[] = "blinds/cover/reboot";
 
-// Time for each rolling shutter to go down and up - you need to measure this and configure - default values - can be changed via web (if enabled)
-#define _Shutter1_duration_down_ 51200
-#define _Shutter1_duration_up_ 51770
-#define _Shutter1_duration_tilt_ 1650
-
-//#define _reverse_position_mapping_ 1
-#define _auto_hold_buttons_ 1
-
 const char payload_open[] = "open";
 const char payload_close[] = "close";
 const char payload_stop[] = "stop";
 
 
 // Change these for your WIFI, IP and MQTT
-//char _ssid1_[] = "GG-2.4G";
-//char _password1_[] = "FhmX8rjjezmd";
+//const char _ssid1_[] = "GG-2.4G";
+//const char _password1_[] = "FhmX8rjjezmd";
 const char _ssid1_[] = "home";
 const char _password1_[] = "12345678";
 const char WEB_UPGRADE_USER[] = "admin";
@@ -55,11 +45,6 @@ const char _mqtt_password_[] = "pass";
 #define WIFI_RETRY_INTERVAL 20000
 #define MQTT_RETRY_INTERVAL 10000
 
-
-const char movementUp[] ="up";
-const char movementDown[] = "down";
-const char movementStopped[] = "stopped";
-
 #define update_interval_loop 50
 #define update_interval_active 1000
 #define update_interval_passive 300000
@@ -67,28 +52,15 @@ const char movementStopped[] = "stopped";
 //Ignore pulses shorter than 100ms
 #define _button_delay_ 100
 
-
-/********************************
-SONOFF DUAL R3 PCB ver 1.x, 2.x
-GPIO13	Status LED (blue/inverted)
-GPIO00	Push Button (inverted)
-GPIO27	Relay 1 / LED 1 (red)
-GPIO14	Relay 2 / LED 2 (red)
-GPIO32	Switch 1 (inverted)
-GPIO33	Switch 2 (inverted)
-GPIO25	power sensor UART Tx
-GPIO26	power sensor UART Rx
-**********************************/
-
 // Relay GPIO ports
 
-#define GPIO_DISPLAY_INVERTED 4  // r1 up wire
+#define GPIO_DISPLAY_INVERTED 4  //Display enable
 
 #define GPIO_REL1 22  // Relay1
 #define GPIO_REL2 19  // Relay2
 
 #define GPIO_BUZZER 21  // buzer
-#define GPIO_USER 23  // buzer
+#define GPIO_USER 23  // user
 
 // Buttons GPIO ports
 #define GPIO_KEY1 14  // Button1
@@ -99,18 +71,13 @@ GPIO26	power sensor UART Rx
 #define KEY_PRESSED  LOW
 
 struct configuration {
-  boolean tilt;
-  boolean reverse_position_mapping; // currently not used
-  boolean auto_hold_buttons;
   char host_name[25];
   char wifi_ssid1[25];
   char wifi_password1[25];
-  char wifi_ssid2[25];
-  char wifi_password2[25];
-  boolean wifi_multi;
   char mqtt_server[25];
   char mqtt_user[25];
   char mqtt_password[25];
+  char blind_names[NUMBER_OF_BLINDS][16];
   char publish_position[50];
   char publish_tilt[50];
   char subscribe_command[50];
@@ -119,10 +86,6 @@ struct configuration {
   char subscribe_calibrate[50];
   char subscribe_reboot[50];
   char subscribe_reset[50]; // currently not used
-  char blind_names[NUMBER_OF_BLINDS][16];
-  unsigned long Shutter1_duration_down;
-  unsigned long Shutter1_duration_up;
-  unsigned long Shutter1_duration_tilt;
 };
 
 extern configuration cfg,web_cfg;

@@ -7,7 +7,7 @@ void openMemory();
 void saveStatus();
 void loadStatus();
 void saveConfig();
-void loadConfig();
+boolean loadConfig();
 void copyConfig(configuration* from,configuration* to);
 void defaultConfig(configuration* c);
 

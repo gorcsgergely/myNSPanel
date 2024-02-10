@@ -2,19 +2,37 @@
 #define WEB_H
 
 #include <WebServer.h>
-//#include <HTTPUpdateServer.h>
+#include <HTTPUpdateServer.h>
 
-void readMain();
-void readConfig();
-void updateField();
-void pressButton();
-void handleRootPath();
-void handleConfigurePath();
-void handleUpgradePath();
-void handleFailurePath();
-void handleSuccessPath();
-void handleTftUploadPath();
-void updateConfig();
+class WebPage{
+  public:
+    WebPage(WebServer *server);
+    void readMain();
+    void readConfig();
+    void updateField();
+    void pressButton();
+    void updateConfig();
+    void setup();
+  public:
+    unsigned long lastUpdate = 0; // timestamp - last MQTT update
+    unsigned long lastCallback = 0; // timestamp - last MQTT callback received
+    unsigned long lastWiFiDisconnect=0;
+    unsigned long lastWiFiConnect=0;
+    unsigned long lastMQTTDisconnect=0; // last time MQTT was disconnected
+    unsigned long WiFiLEDOn=0;
+    unsigned long k1_up_pushed=0;
+    unsigned long k1_down_pushed=0;
+
+    String lastCommand = "";
+    String crcStatus="";
+
+  private:
+    void Restart();
+    int WifiGetRssiAsQuality(int rssi);
+    void timeDiff(char *buf,size_t len,unsigned long lastUpdate);
+  private:
+    WebServer* _server;
+};
 
 
 /***************/
@@ -520,7 +538,6 @@ function sendConfig()
   request.send(JSON.stringify(data));
 }
 
-
 function myFunction(index){
   sendData("blind_names",this.value,index)
 }
@@ -599,8 +616,6 @@ function readConfig() {
   
 <h3>Publish topics</h3>
 <section class="container">
-  <label class="first">Shutter 1</label>
-
   <label class="description">Position</label>
   <input class="first" type="text" maxlength="49" name="publish_position1" id="publish_position1" onchange="sendData(this.id,this.value);">
 
@@ -609,9 +624,7 @@ function readConfig() {
 </section>
   
 <h3>Subscribe topics</h3>
-<section class="container">
-  <label class="first">Shutter 1</label>
-  
+<section class="container"> 
   <label class="description">Commands</label>
   <input class="first" type="text" maxlength="49" name="subscribe_command1" id="subscribe_command1" onchange="sendData(this.id,this.value);">
   
@@ -626,7 +639,7 @@ function readConfig() {
   <label class="description" for="subscribe_reboot">Reboot</label> <input class="full" type="text" maxlength="49" name="subscribe_reboot" id="subscribe_reboot" onchange="sendData(this.id,this.value);"></br>
   <label class="description" for="subscribe_reset">Reset</label> <input class="full" type="text" maxlength="49" name="subscribe_reset" id="subscribe_reset" onchange="sendData(this.id,this.value);"></br>
 </section>
- 
+  
 <br />
 
 <section class="commands">

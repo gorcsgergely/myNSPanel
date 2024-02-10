@@ -79,7 +79,7 @@ void EasyNex::readCommand(){
       dummy = _serial->read();  
       dummy = _serial->read();
       dummy = _serial->read();
-      setCoverPosition(selectedCover,coverPosition,&cfg);
+      shuttercontrol.setCoverPosition(selectedCover,coverPosition);
     break;  
 
     case 0xA1: //Cover tilt changed: 0x3D 0x09 0xA1 COVER_NUMBER 0x00 0x00 0x00 COVER_TILT 0x00 0x00 0x00
@@ -91,7 +91,7 @@ void EasyNex::readCommand(){
       dummy = _serial->read();  
       dummy = _serial->read();
       dummy = _serial->read();
-      setCoverTilt(selectedCover,coverTilt, &cfg);
+      shuttercontrol.setCoverTilt(selectedCover,coverTilt);
     break;  
 
     case 0xA2: //Cover up: 0x3D 0x06 0xA2 COVER_NUMBER 0x00 0x00 0x00

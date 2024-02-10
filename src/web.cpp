@@ -1,44 +1,63 @@
-#ifdef _WEB_
 #include "web.h"
 #include "config.h"
+#include <ArduinoJson.h>
+#include "crc.h"
 
-void handleRootPath() {            //Handler for the rooth path
-   
-  String html = MAIN_page;
-  server.send(200, "text/html", html);
-  
+WebPage::WebPage(WebServer* server){
+  _server = server;
 }
 
-void handleTftUploadPath() {            //Handler for the rooth path
-   
-  String html = TFTUPLOAD_page;
-  server.send(200, "text/html", html);
-  
+/********************************************************
+CONVERTS SIGNAL FROM dB TO %
+*********************************************************/
+int WebPage::WifiGetRssiAsQuality(int rssi)
+{
+  int quality = 0;
+
+  if (rssi <= -100) {
+    quality = 0;
+  } else if (rssi >= -50) {
+    quality = 100;
+  } else {
+    quality = 2 * (rssi + 100);
+  }
+  return quality;
 }
 
-void handleSuccessPath() {            //Handler for the rooth path
-   
-  String html = SUCCESS_page;
-  server.send(200, "text/html", html);
-  
+void WebPage::timeDiff(char *buf,size_t len,unsigned long lastUpdate){
+    //####d, ##:##:##0
+    unsigned long t = millis();
+    if(lastUpdate>t) {
+      snprintf(buf,len,"N/A");
+      return;
+    }
+    t=(t-lastUpdate)/1000;  // Converted to difference in seconds
+
+    int d=t/(60*60*24);
+    t=t%(60*60*24);
+    int h=t/(60*60);
+    t=t%(60*60);
+    int m=t/60;
+    t=t%60;
+    if(d>0) {
+      snprintf(buf,len,"%dd, %02d:%02d:%02d",d,h,m,t);
+    } else if (h>0) {
+      snprintf(buf,len,"%02d:%02d:%02d",h,m,t); 
+    } else {
+      snprintf(buf,len,"%02d:%02d",m,t); 
+    }
 }
 
-void handleFailurePath() {            //Handler for the rooth path
-   
-  String html = FAILURE_page;
-  server.send(200, "text/html", html);
-  
+void WebPage::setup(){
+  _server->on("/readMain", std::bind(&WebPage::readMain, this));
+  _server->on("/readConfig",std::bind(&WebPage::readConfig, this));
+  _server->on("/pressButton",std::bind(&WebPage::pressButton, this));
+  _server->on("/updateField",std::bind(&WebPage::updateField, this));
+  _server->on("/updateConfig", HTTP_POST, std::bind(&WebPage::updateConfig, this));
 }
 
-void handleConfigurePath() {            //Handler for the rooth path
-   
-  String html = CONFIGURE_page;
-  server.send(200, "text/html", html);
-  
-}
-
-//Sends the complete data package as response to an ajax request, currently 500ms update rate
-void readMain() {
+//Sends the complete data package as response to an ajax request, currently 1000ms update rate
+void WebPage::readMain() {
   String mqttResults[10] = { F("-4: server didn't respond within the keepalive time"), F("-3: network connection was broken"), F("-2: network connection failed"), F("-1: client is disconnected cleanly"), F("0: client is connected"), F("1: server doesn't support the requested version of MQTT"), F("2: server rejected the client identifier"), F("3: server was unable to accept the connection"), F("4: username/password were rejected"), F("5: client was not authorized to connect") };
   char buf1[25];
   char buf2[25];
@@ -50,7 +69,6 @@ void readMain() {
   keys.add(String(5));
  
   root["device"]=String(cfg.host_name);
-  root["tilting"]=cfg.tilt?"true":"false";
   root["wifi"]=String(WiFi.SSID());  
   //root["mqtt"]= mqttResults[mqttClient.state()+4];
 
@@ -64,7 +82,7 @@ void readMain() {
     root["mqttmsg"]= "N/A";
   else
     timeDiff(buf1,25,lastCallback);
-    root["mqttmsg"]= lastCommand + " ("+String(buf1)+" ago)";
+  root["mqttmsg"]= lastCommand + " ("+String(buf1)+" ago)";
   root["strength"]=String(WifiGetRssiAsQuality(WiFi.RSSI()));
   root["ip"]=WiFi.localIP().toString();
   
@@ -80,12 +98,11 @@ void readMain() {
 #ifdef DEBUG_updates
   Serial.println(out);
 #endif  
-  server.send(200, "text/plane", out); //Send values to client ajax request
+  _server->send(200, "text/plane", out); //Send values to client ajax request
 }
 
-
-void pressButton() {
-  String t_state = server.arg("button"); //Refer  request.open("GET", "pressButton?button="+button, true);
+void WebPage::pressButton() {
+  String t_state = _server->arg("button"); //Refer  request.open("GET", "pressButton?button="+button, true);
   int btn=t_state.toInt();
   #ifdef DEBUG
     Serial.print("Web button: ");
@@ -121,25 +138,26 @@ void pressButton() {
     Restart();
     break;
  }
- server.send(200, "text/plane", t_state); //Send web page
+ _server->send(200, "text/plane", t_state); //Send web page
 }
 
-void updateConfig() {
+void WebPage::updateConfig() {
 
   JsonDocument doc;
 
-  if (server.hasArg("plain") == false) {
+  if (_server->hasArg("plain") == false) {
     return;
   }
-  String body = server.arg("plain");
+  String body = _server->arg("plain");
 
   DeserializationError error = deserializeJson(doc, body);
 
   if (error) {
-  // Serial.print("deserializeJson() failed: ");
-  // Serial.println(error.c_str());
+ // Serial.print("deserializeJson() failed: ");
+ // Serial.println(error.c_str());
     return;
   }
+
   JsonArray blinds = doc["blinds"];
   for (int i=0; i<blinds.size(); i++)
   {
@@ -147,32 +165,23 @@ void updateConfig() {
     strncpy(web_cfg.blind_names[i], blind_name,15);
   }
 
-  server.send(200, "application/json", "{}");
+  _server->send(200, "application/json", "{}");
+
   copyConfig(&web_cfg,&cfg);
   saveConfig();    
   Restart();
 }
 
-void updateField() {
- String t_field = server.arg("field");
- String t_value = server.arg("value");
+void WebPage::updateField() {
+ String t_field = _server->arg("field");
+ String t_value = _server->arg("value");
  String t_param;
  if (t_field.equals("host_name")) {
     strncpy(web_cfg.host_name,t_value.c_str(),24);
- } else if (t_field.equals("auto_hold_buttons")) {
-    web_cfg.auto_hold_buttons = t_value.equals("true");  
- } else if (t_field.equals("tilt")) {
-    web_cfg.tilt = t_value.equals("true");
- } else if (t_field.equals("wifi_multi")) {
-    web_cfg.wifi_multi = t_value.equals("true");
  } else if (t_field.equals("wifi_ssid1")) {
     strncpy(web_cfg.wifi_ssid1,t_value.c_str(),24);
  } else if (t_field.equals("wifi_password1")) {
     strncpy(web_cfg.wifi_password1,t_value.c_str(),24);
- } else if (t_field.equals("wifi_ssid2")) {
-    strncpy(web_cfg.wifi_ssid2,t_value.c_str(),24);
- } else if (t_field.equals("wifi_password2")) {
-    strncpy(web_cfg.wifi_password2,t_value.c_str(),24);
  } else if (t_field.equals("mqtt_server")) {
     strncpy(web_cfg.mqtt_server,t_value.c_str(),24);
  } else if (t_field.equals("mqtt_user")) {
@@ -201,23 +210,15 @@ void updateField() {
   }*/
  else if (t_field.equals("subscribe_reset")) {
     strncpy(web_cfg.subscribe_reset,t_value.c_str(),49);   
- } else if (t_field.equals("Shutter1_duration_down")) {
-    web_cfg.Shutter1_duration_down=constrain(t_value.toInt(),0,120000);
- }  else if (t_field.equals("Shutter1_duration_up")) {
-    web_cfg.Shutter1_duration_up=constrain(t_value.toInt(),0,120000);
- } else if (t_field.equals("Shutter1_duration_tilt")) {
-    web_cfg.Shutter1_duration_tilt=constrain(t_value.toInt(),0,120000);
- } 
- server.send(200, "text/plane", t_field); //Send web page
- server.send(200, "text/plane", t_value); //Send web page  
+ }
+ _server->send(200, "text/plane", t_field); //Send web page
+ _server->send(200, "text/plane", t_value); //Send web page  
 }
 
-void readConfig() {
+void WebPage::readConfig() {
   
   JsonDocument root;   // normal 1279 (but can configure longer strings, so leave it)
   root["host_name"] = web_cfg.host_name;
-  root["tilt"] = web_cfg.tilt?"true":"false";
-  root["auto_hold_buttons"] = web_cfg.auto_hold_buttons?"true":"false";
   root["wifi_ssid1"] = web_cfg.wifi_ssid1;
   root["wifi_password1"] = web_cfg.wifi_password1;
   root["mqtt_server"] = web_cfg.mqtt_server;
@@ -236,16 +237,15 @@ void readConfig() {
   for (int i=0; i<NUMBER_OF_BLINDS;i++){
    blinds.add(web_cfg.blind_names[i]);
   }
-  
-  root["Shutter1_duration_down"] = web_cfg.Shutter1_duration_down;
-  root["Shutter1_duration_up"] = web_cfg.Shutter1_duration_up;
-  root["Shutter1_duration_tilt"] = web_cfg.Shutter1_duration_tilt;
-  
+ 
   String out;
   serializeJson(root,out);
-#ifdef DEBUG_updates
+  #ifdef DEBUG_updates
   Serial.println(out);
-#endif  
-  server.send(200, "text/plane", out); //Send values to client ajax request
+  #endif  
+  _server->send(200, "text/plane", out); //Send values to client ajax request
 }
-#endif
+
+void  WebPage::Restart() { 
+    ESP.restart(); 
+}
