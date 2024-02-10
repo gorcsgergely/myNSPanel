@@ -126,37 +126,31 @@ void pressButton() {
 
 void updateConfig() {
 
-StaticJsonDocument<384> doc;
+  JsonDocument doc;
 
   if (server.hasArg("plain") == false) {
     return;
   }
   String body = server.arg("plain");
 
-DeserializationError error = deserializeJson(doc, body);
+  DeserializationError error = deserializeJson(doc, body);
 
-if (error) {
- // Serial.print("deserializeJson() failed: ");
- // Serial.println(error.c_str());
-  return;
-}
-//server.send(200, "application/json", "{}");
-JsonArray blinds = doc["blinds"];
-for (int i=0; i<blinds.size(); i++)
-{
-  const char* blind_name=blinds[i];
-  strncpy(web_cfg.blind_names[i], blind_name,15);
-}
+  if (error) {
+  // Serial.print("deserializeJson() failed: ");
+  // Serial.println(error.c_str());
+    return;
+  }
+  JsonArray blinds = doc["blinds"];
+  for (int i=0; i<blinds.size(); i++)
+  {
+    const char* blind_name=blinds[i];
+    strncpy(web_cfg.blind_names[i], blind_name,15);
+  }
 
-server.send(200, "application/json", "{}");
-/*for (JsonObject blind : doc["blinds"].as<JsonArray>()) {
-
-  const char* blind_name = blind["name"]; // "blind10123456789", "blind20123456789", "blind30123456789", ...
-  //int blind_pos = blind["pos"]; // 100, 100, 100, 100, 100, 100, 100
-  //int blind_tilt = blind["tilt"]; // 90, 90, 90, 90, 90, 90, 90
-  lastCommand+=blind_name;
-}*/
-  //server.send(200, "application/json", "{}");
+  server.send(200, "application/json", "{}");
+  copyConfig(&web_cfg,&cfg);
+  saveConfig();    
+  Restart();
 }
 
 void updateField() {
