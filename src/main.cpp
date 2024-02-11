@@ -347,6 +347,12 @@ void trigger2(){
   digitalWrite(GPIO_REL1, LOW);  // Relay1 off
 }
 
+void displayPageChanged(int currentPageId){
+  char pagearray[3];
+  webpage.lastCommand="Page Changed:";
+  webpage.lastCommand+=itoa(currentPageId,pagearray,10);
+}
+
 /***************************************
 * M A I N   A R D U I N O   L O O P  
 ***************************************/

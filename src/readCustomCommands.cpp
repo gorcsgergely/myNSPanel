@@ -14,7 +14,6 @@
 #endif
 
 #include "shutterControl.h"
-
 #include "config.h"
 
 // This was a part of the NextionListen(), but we seperated it, 
@@ -31,19 +30,20 @@ void EasyNex::readCommand(){
                *The next byte is the page <Id> according to our protocol.
                *
                * We have write in every page's "preinitialize page" the command
-               *  printh 23 02 50 xx (where xx is the page id in HEX, 00 for 0, 01 for 1, etc).
+               *  printh 3D 02 50 xx (where xx is the page id in HEX, 00 for 0, 01 for 1, etc).
                * <<<<Every event written on Nextion's pages preinitialize page event will run every time the page is Loaded>>>>
                *  it is importand to let the Arduino "Know" when and which Page change.
                */
       lastCurrentPageId = currentPageId;
-      currentPageId = _serial->read();                   
+      currentPageId = _serial->read();  
+      displayPageChanged(currentPageId);                 
       break;
       
       
     case 'T':   /* Or <case 0x54:>  If 'T' matches, we have the command group "Trigger". 
                  * The next byte is the trigger <Id> according to our protocol.
                  *
-                 * We have to write in a Touch Event on Nextion the following: < printh 23 02 54 xx >
+                 * We have to write in a Touch Event on Nextion the following: < printh 3D 02 54 xx >
                  * (where xx is the trigger id in HEX, 01 for 1, 02 for 2, ... 0A for 10 etc).
                  * With the switch(){case}, we call a predefined void with prefixed names
                  * as we have declare them on trigger.cpp file. Starting from trigger0()......up to trigger50()
@@ -60,8 +60,8 @@ void EasyNex::readCommand(){
                                         digitalWrite(13, LOW);  // sets the digital pin 13 off
                                       }
                  */
-                /* In Touch Press Event of a button on Nextion write <printh 23 02 54 01>
-                 * Every time we press the Button the command <printh 23 02 54 01> will be sent over Serial
+                /* In Touch Press Event of a button on Nextion write <printh 3D 02 54 01>
+                 * Every time we press the Button the command <printh 3D 02 54 01> will be sent over Serial
                  * Then, the library will call the void trigger1()
                  * the code inside the trigger1() will run once ...
                  */
@@ -120,7 +120,7 @@ void EasyNex::readCommand(){
       More for custom protocol and commands https://seithan.com/Easy-Nextion-Library/Custom-Protocol/
       our commands will have this format: <#> <len> <cmd> <id> <id2>
       and we must send them from Nextion as HEX with the printh command
-      like: printh 23 03 4C 01 01
+      like: printh 3D 03 4C 01 01
 
       <#> start marker, declares that a command is followed
       <len> declares the number of bytes that will follow
@@ -172,7 +172,7 @@ void easyNexReadCustomCommand(){
     case 'S': // Or <case 0x53:>  If 'S' matches 
     
     // we are going to write values in specific places in the dataS[] table
-    // from Nextion printh 23 03 53 00 00
+    // from Nextion printh 3D 03 53 00 00
     // read the next byte that determines the position on the table
     arrayPlace = myNex.readByte();
     
