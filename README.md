@@ -57,4 +57,5 @@ to
 ## Using snprintf() and similar print functions
 There is a printf.c and printf.h included in the project. I only use it to save some program space for more webpage content later on. This saves 3-5% program space which is about 200kB.
 You can delete these files and the includes and just use the standard versions(stdio) if you don't need this extra space.
+
 By the way these files are used for the tiny printf: https://github.com/eyalroz/printf
