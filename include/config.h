@@ -19,7 +19,8 @@ const char _subscribe_command_[] = "blinds/cover1/set";
 const char _subscribe_position_[] = "blinds/cover1/position";
 const char _subscribe_tilt_[] = "blinds/cover1/tilt";
 
-extern char _blind_names_[NUMBER_OF_BLINDS][16];
+//extern char _blind_names_[NUMBER_OF_BLINDS][16];
+const char _blind_names_[NUMBER_OF_BLINDS][16] ={"blind1","blind2","blind3","blind4","blind5","blind6","blind7"}; 
 
 const char _subscribe_calibrate_[] = "blinds/cover/calibrate";
 const char _subscribe_reset_[] = "blinds/cover/reset";

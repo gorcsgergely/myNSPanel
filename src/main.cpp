@@ -4,17 +4,14 @@
 
 #include <WiFi.h>  
 #include <ESPmDNS.h>  // Sends host name in WiFi setup
-//#include <PubSubClient.h> // MQTT
 #include <ArduinoOTA.h>   // (Over The Air) update
 #include <HTTPUpdateServer.h>
 
 #include <ArduinoJson.h>
-//#include <math.h>
+
 #include "config.h"
 #include "crc.h"
 #include "web.h"
-
-//#include <SPIFFS.h>
 
 #include "EasyNextionLibrary.h"  // Include EasyNextionLibrary
 
@@ -30,11 +27,6 @@ EasyNex myNex(Serial2); // Create an object of EasyNex class with the name < myN
 
 configuration cfg,web_cfg;
 
-// init Nextion object
-//ESPNexUpload nextion(115200);
-
-// MQTT callback declaratiion (definition below)
-//void callback(char* topic, byte* payload, unsigned int length); 
 void connectedCallback(const char* client_id);
 void disconnectedCallback(const char* client_id);
 
@@ -87,7 +79,6 @@ int noteDurations[] = {
   4, 4
 };
 
-char _blind_names_[NUMBER_OF_BLINDS][16] ={"blind1","blind2","blind3","blind4","blind5","blind6","blind7"}; 
 
 void playMelody() {
 // iterate over the notes of the melody:
@@ -175,11 +166,11 @@ void setup_wifi() {
 void messageCallback(char* topic, char* payload, unsigned int length) {
 
   char *blind_name;
+  char *dummy;
   char *param;
+  int blind_num=0;
 
-  char* payload_copy = (char*)malloc(length+1);
-  memcpy(payload_copy,payload,length);
-  payload_copy[length] = '\0';
+
 
   #ifdef DEBUG
     Serial.print("Message arrived [");
@@ -188,23 +179,55 @@ void messageCallback(char* topic, char* payload, unsigned int length) {
     Serial.println(payload_copy);
   #endif
 
-  webpage.lastCommand="Topic:";
-  webpage.lastCommand+=topic;
-  webpage.lastCommand+=",  Payload:";
-  webpage.lastCommand+=payload_copy;
+  //webpage.lastCommand="Topic:";
+  //webpage.lastCommand+=topic;
+  //webpage.lastCommand+=",  Payload:";
+
   
   webpage.lastCallback= millis();
 
   //pasrse blinds/c1/position topic
   if (strncmp(topic,"blinds/",7)==0)
   {
-    blind_name = strtok_r(topic, "/", &topic);
-    param = strtok_r(topic, "/", &topic);
+    dummy = strtok_r(topic, "/", &topic);// blinds
+    blind_name = strtok_r(topic, "/", &topic);// blind name
+    param = strtok_r(topic, "/", &topic);//position or tilt
   }
- 
-  webpage.lastCommand+=blind_name;
-  webpage.lastCommand+=param;
 
+  //webpage.lastCommand=blind_name;
+  //webpage.lastCommand+=param;
+  //webpage.lastCommand+=payload_copy;
+ 
+  //find which blind is it
+  for(int i=0; i<NUMBER_OF_BLINDS;i++){
+    if(strcmp(blind_name,cfg.blind_names[i])==0)
+    {
+      blind_num=i+1;
+    }
+  }
+
+  //found a matching name
+  if(blind_num!=0){
+    char numberarray[3];
+    if(strcmp(param,"state")==0){ //position changed
+      char* payload_copy = (char*)malloc(length+2);
+      memcpy(payload_copy,payload,length);
+      payload_copy[length]='%';
+      payload_copy[length+1] = '\0';
+
+      String cmdstring = "statuspage.pos";
+      cmdstring+=itoa(blind_num,numberarray, 10);
+      cmdstring+=".txt";
+      myNex.writeStr(cmdstring, payload_copy);
+      
+      free(payload_copy);
+    } else if(strcmp(param,"tilt-state")==0) {//tilt changed
+      String cmdstring = "statuspage.tilt";
+      cmdstring+=itoa(blind_num,numberarray, 10);
+      cmdstring+=".txt";
+      myNex.writeStr(cmdstring, payload);
+    }
+  }
 /*
   if (strcmp(topic, cfg.subscribe_command) == 0) {
     //
@@ -217,7 +240,7 @@ void messageCallback(char* topic, char* payload, unsigned int length) {
   } else if (strcmp(topic, cfg.subscribe_reboot) == 0) {    
      Restart();
   }*/
-  free(payload_copy);
+
 }
 
 void connectedCallback(const char* client_id){
@@ -249,7 +272,7 @@ void setup() {
   }
   else{
     webpage.crcStatus+="CRC config failed. ";
-  };   // loading config to cfg
+  };  
   copyConfig(&cfg,&web_cfg); // copy config to web_cfg as well
 
   pinMode(GPIO_KEY1, INPUT_PULLUP);

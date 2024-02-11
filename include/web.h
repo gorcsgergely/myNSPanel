@@ -574,6 +574,7 @@ function readConfig() {
          input.type = "text";
          input.name = "blind_name_" + b_name_string;
          input.id = "blind_name_" + b_name_string;
+         input.maxlength="24"
          var container = document.getElementById("name_container");
          container.appendChild(lbl);
          container.appendChild(input);

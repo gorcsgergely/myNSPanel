@@ -91,7 +91,7 @@ void defaultConfig(configuration* c) {
   strncpy(c->subscribe_reboot,_subscribe_reboot_,49);
   for (int i=0; i<NUMBER_OF_BLINDS;i++)
   {
-    strncpy(c->blind_names[i], _blind_names_[i],16);
+    strncpy(c->blind_names[i], _blind_names_[i],15);
   }
 }
 
@@ -110,7 +110,7 @@ void copyConfig(configuration* from,configuration* to) {
   strncpy(to->subscribe_reboot,from->subscribe_reboot,49);
   for (int i=0; i<NUMBER_OF_BLINDS;i++)
   {
-    strncpy(to->blind_names[i], from->blind_names[i],16);
+    strncpy(to->blind_names[i], from->blind_names[i],15);
   }
   strncpy(to->publish_tilt,from->publish_tilt,49);
   strncpy(to->subscribe_tilt,from->subscribe_tilt,49);
