@@ -3,36 +3,36 @@
 #define ESP32 1
 
 #include <WiFi.h>  
-#include <ESPmDNS.h>  // Sends host name in WiFi setup
-#include <ArduinoOTA.h>   // (Over The Air) update
+#include <ESPmDNS.h> 
+#include <ArduinoOTA.h>  
 #include <HTTPUpdateServer.h>
-
 #include <ArduinoJson.h>
+#include <PicoMQTT.h>
 
 #include "config.h"
 #include "crc.h"
 #include "web.h"
 
-#include "EasyNextionLibrary.h"  // Include EasyNextionLibrary
+#include "EasyNextionLibrary.h" 
 
 #include "pitches.h"
 #include "printf.h"
 
-#include <PicoMQTT.h>
 #include "httpServer.h"
 #include "shutterControl.h"
 
 EasyNex myNex(Serial2); // Create an object of EasyNex class with the name < myNex > 
-//bool button_state = false;
-
 configuration cfg,web_cfg;
+WiFiClient espClient;         // WiFi
+httpServer httpserver;
+WebPage webpage=WebPage(httpserver.getServer());
+HTTPUpdateServer httpUpdater;
+unsigned long previousWifiAttempt = 0;
+unsigned long previousMQTTAttempt = 0;
+boolean wifiConnected=false;
 
 void connectedCallback(const char* client_id);
 void disconnectedCallback(const char* client_id);
-
-WiFiClient espClient;         // WiFi
-
-// Here I have to initialize mqtt_server after setup
 
 //PicoMQTT::Server mqttBroker;
 class MQTT: public PicoMQTT::Server {
@@ -46,14 +46,6 @@ class MQTT: public PicoMQTT::Server {
 } mqttBroker;
 
 shutterControl shuttercontrol(&mqttBroker);
-
-httpServer httpserver;
-WebPage webpage=WebPage(httpserver.getServer());
-HTTPUpdateServer httpUpdater;
-
-unsigned long previousWifiAttempt = 0;
-unsigned long previousMQTTAttempt = 0;
-boolean wifiConnected=false;
 
 // notes in the melody:
 int melody[] = {
@@ -79,18 +71,13 @@ int noteDurations[] = {
   4, 4
 };
 
-
 void playMelody() {
-// iterate over the notes of the melody:
   int size = sizeof(noteDurations) / sizeof(int);
-
-  for (int thisNote = 0; thisNote < size; thisNote++) {
-
-    // to calculate the note duration, take one second divided by the note type.
-    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+  for (int thisNote = 0; thisNote < size; thisNote++) {// iterate over the notes of the melody
+    // to calculate the note duration, take 2 seconds divided by the note type.
+    //e.g. quarter note = 2000 / 4, eighth note = 2000/8, etc.
     int noteDuration = 2000 / noteDurations[thisNote];
     tone(GPIO_BUZZER, melody[thisNote], noteDuration);
-
     // to distinguish the notes, set a minimum time between them.
     // the note's duration + 30% seems to work well:
     int pauseBetweenNotes = noteDuration * 1.30;
@@ -99,7 +86,6 @@ void playMelody() {
     noTone(GPIO_BUZZER);
   }
 }
-
 
 /************************ 
 * S E T U P   W I F I  
@@ -117,7 +103,6 @@ void setup_wifi() {
   WiFi.begin(cfg.wifi_ssid1, cfg.wifi_password1);
 
   int i=0;
-
   while (WiFi.status() != WL_CONNECTED && i<60) {
     i++;
     delay(500);
@@ -147,12 +132,7 @@ void setup_wifi() {
     return;
   }
   MDNS.begin(cfg.host_name);
-
-//for web firmware upload
-#ifdef _WEB_
   MDNS.addService("http", "tcp", 80);
- // Serial.printf("HTTPUpdateServer ready! Open http://%s.local/update in your browser\n", _host_name_);
-#endif
 
   #ifdef DEBUG
     Serial.println("");
@@ -170,8 +150,6 @@ void messageCallback(char* topic, char* payload, unsigned int length) {
   char *param;
   int blind_num=0;
 
-
-
   #ifdef DEBUG
     Serial.print("Message arrived [");
     Serial.print(topic);
@@ -182,54 +160,48 @@ void messageCallback(char* topic, char* payload, unsigned int length) {
   //webpage.lastCommand="Topic:";
   //webpage.lastCommand+=topic;
   //webpage.lastCommand+=",  Payload:";
-
-  
   webpage.lastCallback= millis();
 
-  //pasrse blinds/c1/position topic
+  //parse blinds/blind_name/ topic
   if (strncmp(topic,"blinds/",7)==0)
   {
     dummy = strtok_r(topic, "/", &topic);// blinds
     blind_name = strtok_r(topic, "/", &topic);// blind name
     param = strtok_r(topic, "/", &topic);//position or tilt
-  }
-
-  //webpage.lastCommand=blind_name;
-  //webpage.lastCommand+=param;
-  //webpage.lastCommand+=payload_copy;
  
-  //find which blind is it
-  for(int i=0; i<NUMBER_OF_BLINDS;i++){
-    if(strcmp(blind_name,cfg.blind_names[i])==0)
-    {
-      blind_num=i+1;
+    //find which blind number is it
+    for(int i=0; i<NUMBER_OF_BLINDS;i++){
+      if(strcmp(blind_name,cfg.blind_names[i])==0)
+      {
+        blind_num=i+1;
+      }
     }
-  }
 
-  //found a matching name
-  if(blind_num!=0){
-    char numberarray[3];
-    if(strcmp(param,"state")==0){ //position changed
-      char* payload_copy = (char*)malloc(length+2);
-      memcpy(payload_copy,payload,length);
-      payload_copy[length]='%';
-      payload_copy[length+1] = '\0';
+    //found a matching name
+    if(blind_num!=0){
+      char numberarray[3];
+      if(strcmp(param,"state")==0){ //position changed
+        char* payload_copy = (char*)malloc(length+2);
+        memcpy(payload_copy,payload,length);
+        payload_copy[length]='%';
+        payload_copy[length+1] = '\0';
 
-      String cmdstring = "statuspage.pos";
-      cmdstring+=itoa(blind_num,numberarray, 10);
-      cmdstring+=".txt";
-      myNex.writeStr(cmdstring, payload_copy);
-      
-      free(payload_copy);
-    } else if(strcmp(param,"tilt-state")==0) {//tilt changed
-      String cmdstring = "statuspage.tilt";
-      cmdstring+=itoa(blind_num,numberarray, 10);
-      cmdstring+=".txt";
-      myNex.writeStr(cmdstring, payload);
+        String cmdstring = "statuspage.pos";
+        cmdstring+=itoa(blind_num,numberarray, 10);
+        cmdstring+=".txt";
+        myNex.writeStr(cmdstring, payload_copy);
+        
+        free(payload_copy);
+      } else if(strcmp(param,"tilt-state")==0) {//tilt changed
+        String cmdstring = "statuspage.tilt";
+        cmdstring+=itoa(blind_num,numberarray, 10);
+        cmdstring+=".txt";
+        myNex.writeStr(cmdstring, payload);
+      }
     }
   }
 /*
-  if (strcmp(topic, cfg.subscribe_command) == 0) {
+  else if (strcmp(topic, cfg.subscribe_command) == 0) {
     //
   } else if (strcmp(topic, cfg.subscribe_position) == 0) {
     //
@@ -263,7 +235,8 @@ void setup() {
 
   pinMode(GPIO_REL1, OUTPUT);
   pinMode(GPIO_REL2, OUTPUT);
-
+  pinMode(GPIO_KEY1, INPUT_PULLUP);
+  pinMode(GPIO_KEY2, INPUT_PULLUP);
 
 // Open EEPROM
   openMemory();
@@ -275,22 +248,16 @@ void setup() {
   };  
   copyConfig(&cfg,&web_cfg); // copy config to web_cfg as well
 
-  pinMode(GPIO_KEY1, INPUT_PULLUP);
-  pinMode(GPIO_KEY2, INPUT_PULLUP);
+  myNex.begin(112500); //begin the object with a baud rate of 115200 on Serial2 towards Nextion display
 
-  myNex.begin(112500); // Begin the object with a baud rate of 115200
-
-  Serial.begin(115200);
-  Serial.setDebugOutput(false);
+  Serial.begin(115200); //begin main serial for debug
+  Serial.setDebugOutput(false);  //turn of debug output from the WiFi library
 
   setup_wifi();
 
   //playMelody();
-  
- /* mqttClient.setServer(cfg.mqtt_server,1883);
-  mqttClient.setCallback(callback);*/
-  
-// Over The Air Update
+    
+  // Over The Air Update
   ArduinoOTA.setHostname(cfg.host_name);
   //ArduinoOTA.setPassword(OTA_password);
   ArduinoOTA.onStart([]() {
@@ -312,11 +279,13 @@ void setup() {
     Serial.println("\nEnd");
     #endif
   });
+
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     #ifdef DEBUG
     Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
     #endif
   });
+
   ArduinoOTA.onError([](ota_error_t error) {
     #ifdef DEBUG
     Serial.printf("Error[%u]: ", error);
@@ -335,19 +304,17 @@ void setup() {
   });
   ArduinoOTA.begin(); 
 
-
-// Turn on the Web Server
+  // Turn on the Web Server
   httpserver.setup();
   webpage.setup();
   httpUpdater.setup(httpserver.getServer(),"/upgrade",WEB_UPGRADE_USER, WEB_UPGRADE_PASS);
   httpserver.begin(); //Start the server
 
-
-   mqttBroker.subscribe("#", [](char* topic, void* payload, size_t payload_size){
+  //setup MQTT broker
+  mqttBroker.subscribe("#", [](char* topic, void* payload, size_t payload_size){
     messageCallback(topic, (char*) payload, payload_size);
-   });
-   mqttBroker.begin();
-
+  });
+  mqttBroker.begin();
 }
 
 String macToStr(const uint8_t* mac)
@@ -360,104 +327,6 @@ String macToStr(const uint8_t* mac)
   }
   return result;
 }
-
-/********************************
-* R E C O N N E C T   M Q T T 
-********************************/
-/*
-void mqtt_reconnect() {
-  #ifdef DEBUG
-    Serial.print("Attempting MQTT connection...");
-  #endif
-  char topic[40];
-  unsigned long now = millis();
- // if (lastMQTTDisconnect!=0 && lastMQTTDisconnect<now && (unsigned long)(now-lastMQTTDisconnect)<10000) return;
-  if (lastMQTTDisconnect!=0 && (unsigned long)(now-lastMQTTDisconnect)<10000) return;
-  lastMQTTDisconnect=now;
-  // Attempt to connect
-  
-  uint8_t mac[6];
-  WiFi.macAddress(mac);
-  String clientName(cfg.host_name);
-  clientName += "-";
-  clientName += macToStr(mac);
-  clientName += "-";
-  clientName += String(micros() & 0xff, 16);
-  
-  if (mqttClient.connect((char*)clientName.c_str(),cfg.mqtt_user,cfg.mqtt_password)) {
-    #ifdef DEBUG
-      Serial.println("connected");
-    #endif
-
-    // resubscribe
-    for (int i=0; i<NUMBER_OF_BLINDS; i++){
-      snprintf(topic,40,"blinds/%s/state", cfg.blind_names[i]);
-      mqttClient.subscribe(topic);
-      snprintf(topic,40,"blinds/%s/tilt-state", cfg.blind_names[i]);
-      mqttClient.subscribe(topic);
-    }
-
-  } else {
-    #ifdef DEBUG
-      Serial.print("failed, rc=");
-      Serial.print(mqttClient.state());
-    #endif
-  }
-}*/
-
-
-/*
-// Callback for processing MQTT message
-void callback(char* topic, byte* payload, unsigned int length) {
-
-  char *blind_name;
-  char *param;
-
-  char* payload_copy = (char*)malloc(length+1);
-  memcpy(payload_copy,payload,length);
-  payload_copy[length] = '\0';
-
-  #ifdef DEBUG
-    Serial.print("Message arrived [");
-    Serial.print(topic);
-    Serial.print("] ");
-    Serial.println(payload_copy);
-  #endif
-
-  lastCommand="Topic:";
-  lastCommand+=topic;
-  lastCommand+=",  Payload:";
-  lastCommand+=payload_copy;
-  
-  lastCallback= millis();
-
-  //pasrse blinds/c1/position topic
-  if (strncmp(topic,"blinds/",7)==0)
-  {
-    blind_name = strtok_r(topic, "/", &topic);
-    param = strtok_r(topic, "/", &topic);
-  }
- 
-  lastCommand+=blind_name;
-  lastCommand+=" ";
-  lastCommand+=param;
-  lastCommand+=" ";
-
-//  if (strcmp(topic, cfg.subscribe_command) == 0) {
-    //
- // } else if (strcmp(topic, cfg.subscribe_position) == 0) {
-    //
-//  } else if (cfg.tilt && strcmp(topic, cfg.subscribe_tilt) == 0) {
-    //
- // }  else if (strcmp(topic, cfg.subscribe_calibrate) == 0) {
-    //
-//  } else if (strcmp(topic, cfg.subscribe_reboot) == 0) {    
- //    Restart();
- // }
-
-  free(payload_copy);
-}*/
-
 
 /******************************************
 * NEXTION CODE printh 23 02 54 00
@@ -472,59 +341,28 @@ void trigger0(){
 
 void trigger1(){
   digitalWrite(GPIO_REL1, HIGH);  // Relay1 on
- /* if(!button_state){
-    myNex.writeNum("b0.bco", 2016); // Set button b0 background color to GREEN (color code: 2016)
-    myNex.writeStr("b0.txt", "ON"); // Set button b0 text to "ON"
-    button_state=true;
-  } else {
-    myNex.writeNum("b0.bco", 63488); // Set button b0 background color to RED (color code: 63488)
-    myNex.writeStr("b0.txt", "OFF"); // Set button b0 text to "OFF"
-    button_state=false;
-  }*/
 }
 
 void trigger2(){
   digitalWrite(GPIO_REL1, LOW);  // Relay1 off
- /* if(!button_state){
-    myNex.writeNum("b0.bco", 2016); // Set button b0 background color to GREEN (color code: 2016)
-    myNex.writeStr("b0.txt", "ON"); // Set button b0 text to "ON"
-    button_state=true;
-  } else {
-    myNex.writeNum("b0.bco", 63488); // Set button b0 background color to RED (color code: 63488)
-    myNex.writeStr("b0.txt", "OFF"); // Set button b0 text to "OFF"
-    button_state=false;
-  }*/
 }
 
 /***************************************
 * M A I N   A R D U I N O   L O O P  
 ***************************************/
 void loop() {
-  //char ipbuff[30];
   unsigned long now = millis();
 
   if (WiFi.status() == WL_CONNECTED) {
     if (!wifiConnected) //just (re)connected
     {
       wifiConnected=true;
-      //snprintf(ipbuff,30,"ipaddress=%s",WiFi.localIP().toString());
       myNex.writeStr("settings.ip_address.txt",WiFi.localIP().toString());
     }
     webpage.lastWiFiConnect=now;  // Not used at the moment
     ArduinoOTA.handle(); // OTA first
-    /*if (mqttClient.loop()) {
-      // publishSensor();
-    } else {
-      if((unsigned long)(now - previousMQTTAttempt) > MQTT_RETRY_INTERVAL)//every 10 sec
-      {
-        //digitalWrite(SLED, HIGH);   // Turn the Status Led off
-        mqtt_reconnect();  
-        previousMQTTAttempt = now;    
-      }
-    } */
     mqttBroker.loop();
     httpserver.handleClient();         // Web handling
-
   } else {
     if(wifiConnected) //just disconnected
     {
