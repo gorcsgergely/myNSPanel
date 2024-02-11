@@ -51,8 +51,6 @@ void httpServer::handleConfigurePath() {
 
 // handle the file uploads
 boolean httpServer::handleFileUpload(){
-   digitalWrite(GPIO_REL1, LOW);  // Relay1 off
-     digitalWrite(GPIO_REL2, HIGH);  // Relay1 off
   HTTPUpload& upload = _server.upload();
   
   // Check if file seems valid nextion tft file
@@ -90,7 +88,6 @@ boolean httpServer::handleFileUpload(){
     }
     
   }else if(upload.status == UPLOAD_FILE_WRITE){
-
     // Write the received bytes to the nextion
     _result = _nextion.upload(upload.buf, upload.currentSize);
     
