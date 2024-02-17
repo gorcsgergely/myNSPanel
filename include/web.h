@@ -550,17 +550,6 @@ function readConfig() {
       document.getElementById("host_name").value = resp.host_name;
       document.getElementById("wifi_ssid1").value = resp.wifi_ssid1;
       document.getElementById("wifi_password1").value = resp.wifi_password1;
-      document.getElementById("mqtt_server").value = resp.mqtt_server;
-      document.getElementById("mqtt_user").value = resp.mqtt_user;
-      document.getElementById("mqtt_password").value = resp.mqtt_password;
-      document.getElementById("publish_position1").value = resp.publish_position1;
-      document.getElementById("publish_tilt1").value = resp.publish_tilt1;
-      document.getElementById("subscribe_command1").value = resp.subscribe_command1;
-      document.getElementById("subscribe_position1").value = resp.subscribe_position1;
-      document.getElementById("subscribe_tilt1").value = resp.subscribe_tilt1;
-      document.getElementById("subscribe_calibrate").value = resp.subscribe_calibrate;
-      document.getElementById("subscribe_reboot").value = resp.subscribe_reboot;
-      document.getElementById("subscribe_reset").value = resp.subscribe_reset;
       BLIND_NUMBER=0;
       for (i=0; i<resp.blind_names.length;i++){
         var b_name_string=i+1;
@@ -574,7 +563,8 @@ function readConfig() {
          input.type = "text";
          input.name = "blind_name_" + b_name_string;
          input.id = "blind_name_" + b_name_string;
-         input.maxlength="24"
+         input.maxlength="24";
+         input.className="full";
          var container = document.getElementById("name_container");
          container.appendChild(lbl);
          container.appendChild(input);
@@ -606,42 +596,7 @@ function readConfig() {
 
 <h2>Names</h2>
 <section class="container" id="name_container">
-</section>
-  
-<h2>MQTT</h2>
-<section class="container">
-  <label class="description" for="mqtt_server">Server</label> <input class="full" type="text" maxlength="24" name="mqtt_server" id="mqtt_server" onchange="sendData(this.id,this.value);">
-  <label  class="description" for="mqtt_user">User</label> <input class="full" type="text" maxlength="24" name="mqtt_user" id="mqtt_user" onchange="sendData(this.id,this.value);">
-  <label  class="description" for="mqtt_password">Password</label> <input class="full" type="text" maxlength="24" name="mqtt_password" id="mqtt_password" onchange="sendData(this.id,this.value);">
 </section>  
-  
-<h3>Publish topics</h3>
-<section class="container">
-  <label class="description">Position</label>
-  <input class="first" type="text" maxlength="49" name="publish_position1" id="publish_position1" onchange="sendData(this.id,this.value);">
-
-  <label class="description tilt">Tilt position</label>
-  <input class="first tilt" type="text" maxlength="49" name="publish_tilt1" id="publish_tilt1" onchange="sendData(this.id,this.value);">
-</section>
-  
-<h3>Subscribe topics</h3>
-<section class="container"> 
-  <label class="description">Commands</label>
-  <input class="first" type="text" maxlength="49" name="subscribe_command1" id="subscribe_command1" onchange="sendData(this.id,this.value);">
-  
-  <label class="description">Set position</label>
-  <input class="first" type="text" maxlength="49" name="subscribe_position1" id="subscribe_position1" onchange="sendData(this.id,this.value);">
-
-  <label class="description tilt"><td>Set tilt position</label>
-  <input class="first tilt" type="text" maxlength="49" name="subscribe_tilt1" id="subscribe_tilt1" onchange="sendData(this.id,this.value);">
-
-  <div class="header"></div>
-  <label class="description" for="subscribe_calibrate">Calibrate</label> <input class="full" type="text" maxlength="49" name="subscribe_calibrate" id="subscribe_calibrate" onchange="sendData(this.id,this.value);"></br>
-  <label class="description" for="subscribe_reboot">Reboot</label> <input class="full" type="text" maxlength="49" name="subscribe_reboot" id="subscribe_reboot" onchange="sendData(this.id,this.value);"></br>
-  <label class="description" for="subscribe_reset">Reset</label> <input class="full" type="text" maxlength="49" name="subscribe_reset" id="subscribe_reset" onchange="sendData(this.id,this.value);"></br>
-</section>
-  
-<br />
 
 <section class="commands">
 <button type="button" class="reset" onclick="location.href='/';">Back</button>

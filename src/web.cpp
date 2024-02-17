@@ -182,35 +182,12 @@ void WebPage::updateField() {
     strncpy(web_cfg.wifi_ssid1,t_value.c_str(),24);
  } else if (t_field.equals("wifi_password1")) {
     strncpy(web_cfg.wifi_password1,t_value.c_str(),24);
- } else if (t_field.equals("mqtt_server")) {
-    strncpy(web_cfg.mqtt_server,t_value.c_str(),24);
- } else if (t_field.equals("mqtt_user")) {
-    strncpy(web_cfg.mqtt_user,t_value.c_str(),24);
- } else if (t_field.equals("mqtt_password")) {
-    strncpy(web_cfg.mqtt_password,t_value.c_str(),24);
- } else if (t_field.equals("publish_position1")) {
-    strncpy(web_cfg.publish_position,t_value.c_str(),49);
- } else if (t_field.equals("publish_tilt1")) {
-    strncpy(web_cfg.publish_tilt,t_value.c_str(),49);
- } else if (t_field.equals("subscribe_command1")) {
-    strncpy(web_cfg.subscribe_command,t_value.c_str(),49);
- }  else if (t_field.equals("subscribe_position1")) {
-    strncpy(web_cfg.subscribe_position,t_value.c_str(),49);
- }  else if (t_field.equals("subscribe_tilt1")) {
-    strncpy(web_cfg.subscribe_tilt,t_value.c_str(),49);
- }  else if (t_field.equals("subscribe_calibrate")) {
-    strncpy(web_cfg.subscribe_calibrate,t_value.c_str(),49);
- } else if (t_field.equals("subscribe_reboot")) {
-    strncpy(web_cfg.subscribe_reboot,t_value.c_str(),49);
  } 
  /* else if (t_field.equals("blind_names")) 
   {
     t_param = server.arg("param");
     strncpy(web_cfg.blind_names[t_param.toInt()], t_value.c_str(),16);
   }*/
- else if (t_field.equals("subscribe_reset")) {
-    strncpy(web_cfg.subscribe_reset,t_value.c_str(),49);   
- }
  _server->send(200, "text/plane", t_field); //Send web page
  _server->send(200, "text/plane", t_value); //Send web page  
 }
@@ -221,18 +198,6 @@ void WebPage::readConfig() {
   root["host_name"] = web_cfg.host_name;
   root["wifi_ssid1"] = web_cfg.wifi_ssid1;
   root["wifi_password1"] = web_cfg.wifi_password1;
-  root["mqtt_server"] = web_cfg.mqtt_server;
-  root["mqtt_user"] = web_cfg.mqtt_user;
-  root["mqtt_password"] = web_cfg.mqtt_password;
-  root["publish_position1"] = web_cfg.publish_position;
-  root["publish_tilt1"] = web_cfg.publish_tilt;
-  root["subscribe_command1"] = web_cfg.subscribe_command;
-  root["subscribe_position1"] = web_cfg.subscribe_position;
-  root["subscribe_tilt1"] = web_cfg.subscribe_tilt;
-  root["subscribe_calibrate"] = web_cfg.subscribe_calibrate;
-  root["subscribe_reboot"] = web_cfg.subscribe_reboot;
-  root["subscribe_reset"] = web_cfg.subscribe_reset;
-
   JsonArray blinds = root["blind_names"].to<JsonArray>();
   for (int i=0; i<NUMBER_OF_BLINDS;i++){
    blinds.add(web_cfg.blind_names[i]);

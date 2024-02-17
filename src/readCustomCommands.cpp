@@ -15,6 +15,7 @@
 
 #include "shutterControl.h"
 #include "config.h"
+#include "crc.h"
 
 // This was a part of the NextionListen(), but we seperated it, 
 // in order to make easier the modifications for it, especially in the case of a custom protocol
@@ -79,7 +80,7 @@ void EasyNex::readCommand(){
       dummy = _serial->read();  
       dummy = _serial->read();
       dummy = _serial->read();
-      shuttercontrol.setCoverPosition(selectedCover,coverPosition);
+      shuttercontrol.setCoverPosition(selectedCover, coverPosition);
     break;  
 
     case 0xA1: //Cover tilt changed: 0x3D 0x09 0xA1 COVER_NUMBER 0x00 0x00 0x00 COVER_TILT 0x00 0x00 0x00
@@ -91,19 +92,39 @@ void EasyNex::readCommand(){
       dummy = _serial->read();  
       dummy = _serial->read();
       dummy = _serial->read();
-      shuttercontrol.setCoverTilt(selectedCover,coverTilt);
+      shuttercontrol.setCoverTilt(selectedCover, coverTilt);
     break;  
 
-    case 0xA2: //Cover up: 0x3D 0x06 0xA2 COVER_NUMBER 0x00 0x00 0x00
+    case 0xA2: //Cover up: 0x3D 0x06 0xA4 COVER_NUMBER 0x00 0x00 0x00
 
     break;  
 
-    case 0xA3: //Cover down: 0x3D 0x06 0xA3 COVER_NUMBER 0x00 0x00 0x00
+    case 0xA3: //Cover down: 0x3D 0x06 0xA5 COVER_NUMBER 0x00 0x00 0x00
     
     break;  
 
-    case 0xA4: //Cover stop: 0x3D 0x06 0xA4 COVER_NUMBER 0x00 0x00 0x00
+    case 0xA4: //Cover stop: 0x3D 0x06 0xA6 COVER_NUMBER 0x00 0x00 0x00
     
+    break; 
+
+    case 0xA5: //set wifi ssid : 0x3D 0x0x 0xA2 SSID
+      for(int i=0; i<(_len-1);i++)
+      {
+        cfg.wifi_ssid1[i] = _serial->read();  
+      }
+      cfg.wifi_ssid1[_len-1]=0;
+    break; 
+    
+    case 0xA6: //set wifi password: 0x3D 0x0x 0xA3 PASSWORD
+      for(int i=0; i<(_len-1);i++)
+      {
+        cfg.wifi_password1[i] = _serial->read();  
+      }
+      cfg.wifi_password1[_len-1]=0;
+    break; 
+
+    case 0xA7: //Save config: 0x3D 0x01 0xA7
+      saveConfig();
     break; 
     
     default:

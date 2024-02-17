@@ -238,18 +238,28 @@ void setup() {
   pinMode(GPIO_KEY1, INPUT_PULLUP);
   pinMode(GPIO_KEY2, INPUT_PULLUP);
 
+  myNex.begin(112500); //begin the object with a baud rate of 115200 on Serial2 towards Nextion display
+
 // Open EEPROM
   openMemory();
   if (loadConfig()){
     webpage.crcStatus+="CRC config OK! ";
+    myNex.writeStr("settings.wifi_ssid.txt",cfg.wifi_ssid1);
+    myNex.writeStr("settings.wifi_pass.txt",cfg.wifi_password1);
+    for(int i=0; i<NUMBER_OF_BLINDS;i++) //set blind name text on status page buttons
+    {
+      char numberarray[1];
+      String textname="statuspage.button0";
+      textname+=itoa(i,numberarray, 10);
+      textname="text.txt";
+      myNex.writeStr(textname, cfg.blind_names[i]);
+    }
   }
   else{
     webpage.crcStatus+="CRC config failed. ";
   };  
+
   copyConfig(&cfg,&web_cfg); // copy config to web_cfg as well
-
-  myNex.begin(112500); //begin the object with a baud rate of 115200 on Serial2 towards Nextion display
-
   Serial.begin(115200); //begin main serial for debug
   Serial.setDebugOutput(false);  //turn of debug output from the WiFi library
 

@@ -80,15 +80,6 @@ void defaultConfig(configuration* c) {
   strncpy(c->host_name,_host_name_,24);
   strncpy(c->wifi_ssid1,_ssid1_,24);
   strncpy(c->wifi_password1,_password1_,24);
-  strncpy(c->mqtt_server,_mqtt_server_,24);
-  strncpy(c->mqtt_user,_mqtt_user_,24);
-  strncpy(c->mqtt_password,_mqtt_password_,24);
-  strncpy(c->publish_position,_publish_position_,49);
-  strncpy(c->subscribe_command,_subscribe_command_,49);
-  strncpy(c->subscribe_position,_subscribe_position_,49);
-  strncpy(c->subscribe_calibrate,_subscribe_calibrate_,49);
-  strncpy(c->subscribe_reset,_subscribe_reset_,49);
-  strncpy(c->subscribe_reboot,_subscribe_reboot_,49);
   for (int i=0; i<NUMBER_OF_BLINDS;i++)
   {
     strncpy(c->blind_names[i], _blind_names_[i],15);
@@ -99,19 +90,8 @@ void copyConfig(configuration* from,configuration* to) {
   strncpy(to->host_name,from->host_name,24);
   strncpy(to->wifi_ssid1,from->wifi_ssid1,24);
   strncpy(to->wifi_password1,from->wifi_password1,24);
-  strncpy(to->mqtt_server,from->mqtt_server,24);
-  strncpy(to->mqtt_user,from->mqtt_user,24);
-  strncpy(to->mqtt_password,from->mqtt_password,24);
-  strncpy(to->publish_position,from->publish_position,49);
-  strncpy(to->subscribe_command,from->subscribe_command,49);
-  strncpy(to->subscribe_position,from->subscribe_position,49);
-  strncpy(to->subscribe_calibrate,from->subscribe_calibrate,49);
-  strncpy(to->subscribe_reset,from->subscribe_reset,49);
-  strncpy(to->subscribe_reboot,from->subscribe_reboot,49);
   for (int i=0; i<NUMBER_OF_BLINDS;i++)
   {
     strncpy(to->blind_names[i], from->blind_names[i],15);
   }
-  strncpy(to->publish_tilt,from->publish_tilt,49);
-  strncpy(to->subscribe_tilt,from->subscribe_tilt,49);
 }
