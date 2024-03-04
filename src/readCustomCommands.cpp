@@ -37,7 +37,7 @@ void EasyNex::readCommand(){
                */
       lastCurrentPageId = currentPageId;
       currentPageId = _serial->read();  
-      displayPageChanged(currentPageId);                 
+     // displayPageChanged(currentPageId);                 
       break;
       
       
@@ -95,19 +95,31 @@ void EasyNex::readCommand(){
       shuttercontrol.setCoverTilt(selectedCover, coverTilt);
     break;  
 
-    case 0xA2: //Cover up: 0x3D 0x06 0xA4 COVER_NUMBER 0x00 0x00 0x00
-
+    case 0xA2: //Cover up: 0x3D 0x06 0xA2 COVER_NUMBER 0x00 0x00 0x00
+      selectedCover = _serial->read();  
+      dummy = _serial->read();  
+      dummy = _serial->read();
+      dummy = _serial->read();
+      shuttercontrol.openCover(selectedCover);
     break;  
 
-    case 0xA3: //Cover down: 0x3D 0x06 0xA5 COVER_NUMBER 0x00 0x00 0x00
-    
+    case 0xA3: //Cover down: 0x3D 0x06 0xA3 COVER_NUMBER 0x00 0x00 0x004
+      selectedCover = _serial->read();  
+      dummy = _serial->read();  
+      dummy = _serial->read();
+      dummy = _serial->read();
+      shuttercontrol.closeCover(selectedCover);
     break;  
 
-    case 0xA4: //Cover stop: 0x3D 0x06 0xA6 COVER_NUMBER 0x00 0x00 0x00
-    
+    case 0xA4: //Cover stop: 0x3D 0x06 0xA4 COVER_NUMBER 0x00 0x00 0x00
+      selectedCover = _serial->read();  
+      dummy = _serial->read();  
+      dummy = _serial->read();
+      dummy = _serial->read();
+      shuttercontrol.stopCover(selectedCover);
     break; 
 
-    case 0xA5: //set wifi ssid : 0x3D 0x0x 0xA2 SSID
+    case 0xA5: //set wifi ssid : 0x3D 0xHH 0xA5 SSID
       for(int i=0; i<(_len-1);i++)
       {
         cfg.wifi_ssid1[i] = _serial->read();  
@@ -115,7 +127,7 @@ void EasyNex::readCommand(){
       cfg.wifi_ssid1[_len-1]=0;
     break; 
     
-    case 0xA6: //set wifi password: 0x3D 0x0x 0xA3 PASSWORD
+    case 0xA6: //set wifi password: 0x3D 0xHH 0xA6 PASSWORD
       for(int i=0; i<(_len-1);i++)
       {
         cfg.wifi_password1[i] = _serial->read();  

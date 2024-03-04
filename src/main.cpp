@@ -245,13 +245,14 @@ void setup() {
   if (loadConfig()){
     webpage.crcStatus+="CRC config OK! ";
     myNex.writeStr("settings.wifi_ssid.txt",cfg.wifi_ssid1);
-    myNex.writeStr("settings.wifi_pass.txt",cfg.wifi_password1);
-    for(int i=0; i<NUMBER_OF_BLINDS;i++) //set blind name text on status page buttons
+   myNex.writeStr("settings.wifi_pass.txt",cfg.wifi_password1);
+   for(int i=0; i<NUMBER_OF_BLINDS;i++) //set blind name text on status page buttons
     {
-      char numberarray[1];
+      char numberarray[3];
       String textname="statuspage.button0";
-      textname+=itoa(i,numberarray, 10);
-      textname="text.txt";
+      textname+=itoa(i+1,numberarray, 10);
+      textname+="text.txt";
+      webpage.crcStatus+=textname;
       myNex.writeStr(textname, cfg.blind_names[i]);
     }
   }

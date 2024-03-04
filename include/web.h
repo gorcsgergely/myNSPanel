@@ -226,7 +226,6 @@ function readMain() {
       var resp= JSON.parse(this.responseText);
       document.title=resp.device;
       document.getElementById("device").innerHTML=resp.device;
-      document.getElementById("mqtt").innerHTML=resp.mqtt;
       document.getElementById("mqttmsg").innerHTML=resp.mqttmsg;
       document.getElementById("disconnect").innerHTML=resp.disconnect;
       document.getElementById("crc").innerHTML=resp.crc;
@@ -294,7 +293,6 @@ function readMain() {
 
 <h2>MQTT</h2>
 <section>
-  <p><span class="topic">Status:</span> <span id="mqtt"></span></p>
   <p><span class="topic">Last received message:</span> <span id="mqttmsg"></span></p>
   <p><span class="topic">Last update:</span> <span id="update"></span></p>
   <p><span class="topic">Last loss of WiFi,MQTT:</span> <span id="disconnect"></span></p>
