@@ -37,7 +37,7 @@ void EasyNex::readCommand(){
                */
       lastCurrentPageId = currentPageId;
       currentPageId = _serial->read();  
-      displayPageChanged(currentPageId);                 
+     // displayPageChanged(currentPageId);                 
       break;
       
       

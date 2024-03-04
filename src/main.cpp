@@ -251,7 +251,8 @@ void setup() {
       char numberarray[3];
       String textname="statuspage.button0";
       textname+=itoa(i+1,numberarray, 10);
-      textname="text.txt";
+      textname+="text.txt";
+      webpage.crcStatus+=textname;
       myNex.writeStr(textname, cfg.blind_names[i]);
     }
   }
