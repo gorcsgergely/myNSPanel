@@ -22,9 +22,11 @@ const char _ssid1_[] = "home";
 const char _password1_[] = "12345678";
 const char WEB_UPGRADE_USER[] = "admin";
 const char WEB_UPGRADE_PASS[] = "admin";
+const char _mqtt_server_[] = "192.168.0.89";
 //char OTA_password[] = "admin"; // Only accepts [a-z][A-Z][0-9]
 
 #define WIFI_RETRY_INTERVAL 20000
+#define MQTT_RETRY_INTERVAL 10000
 
 //Ignore pulses shorter than 100ms
 #define _button_delay_ 100
@@ -50,6 +52,7 @@ struct configuration {
   char host_name[25];
   char wifi_ssid1[25];
   char wifi_password1[25];
+  char mqtt_server[25];
   char blind_names[NUMBER_OF_BLINDS][16];
 };
 

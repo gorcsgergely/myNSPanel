@@ -158,6 +158,15 @@ void WebPage::updateConfig() {
     return;
   }
 
+  String hname = doc["host_name"];
+  strncpy(web_cfg.host_name,hname.c_str(),24);
+  String ssid = doc["wifi_ssid1"];
+  strncpy(web_cfg.wifi_ssid1,ssid.c_str(),24);
+  String pwd = doc["wifi_password1"];
+  strncpy(web_cfg.wifi_password1,pwd.c_str(),24);
+  String mqttserver = doc["mqtt_server"];
+  strncpy(web_cfg.mqtt_server,mqttserver.c_str(),24);
+
   JsonArray blinds = doc["blinds"];
   for (int i=0; i<blinds.size(); i++)
   {
@@ -198,6 +207,7 @@ void WebPage::readConfig() {
   root["host_name"] = web_cfg.host_name;
   root["wifi_ssid1"] = web_cfg.wifi_ssid1;
   root["wifi_password1"] = web_cfg.wifi_password1;
+  root["mqtt_server"] = web_cfg.mqtt_server;
   JsonArray blinds = root["blind_names"].to<JsonArray>();
   for (int i=0; i<NUMBER_OF_BLINDS;i++){
    blinds.add(web_cfg.blind_names[i]);

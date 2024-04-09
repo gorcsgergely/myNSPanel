@@ -518,7 +518,17 @@ function sendData(field,value, param) {
 function sendConfig()
 {
 
-  var data={"blinds":[]};
+  var data={
+      "host_name":"",
+      "wifi_ssid1":"",
+      "wifi_password1":"",
+      "mqtt_server":"",
+      "blinds":[]};
+
+  data.host_name= document.getElementById("host_name").value;
+  data.wifi_ssid1= document.getElementById("wifi_ssid1").value;
+  data.wifi_password1= document.getElementById("wifi_password1").value;
+  data.mqtt_server= document.getElementById("mqtt_server").value;
 
  for(var i=0; i<BLIND_NUMBER;i++)
  {
@@ -548,6 +558,7 @@ function readConfig() {
       document.getElementById("host_name").value = resp.host_name;
       document.getElementById("wifi_ssid1").value = resp.wifi_ssid1;
       document.getElementById("wifi_password1").value = resp.wifi_password1;
+      document.getElementById("mqtt_server").value = resp.mqtt_server;
       BLIND_NUMBER=0;
       for (i=0; i<resp.blind_names.length;i++){
         var b_name_string=i+1;
@@ -591,6 +602,11 @@ function readConfig() {
   <label class="description" for="wifi_ssid1">SSID 1</label> <input class="full" type="text" maxlength="24" name="wifi_ssid1" id="wifi_ssid1" onchange="sendData(this.id,this.value);">
   <label class="description" for="wifi_password1">password 1</label> <input class="full" type="text" maxlength="24" name="wifi_password1" id="wifi_password1" onchange="sendData(this.id,this.value);">
 </section>
+
+<h2>MQTT</h2>
+<section class="container">
+  <label class="description" for="mqtt_server">Server</label> <input class="full" type="text" maxlength="24" name="mqtt_server" id="mqtt_server">
+</section> 
 
 <h2>Names</h2>
 <section class="container" id="name_container">

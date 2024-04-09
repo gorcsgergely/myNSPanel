@@ -7,7 +7,7 @@
 #include <ArduinoOTA.h>  
 #include <HTTPUpdateServer.h>
 #include <ArduinoJson.h>
-#include <PicoMQTT.h>
+#include <PubSubClient.h> // MQTT
 
 #include "config.h"
 #include "crc.h"
@@ -30,12 +30,13 @@ HTTPUpdateServer httpUpdater;
 unsigned long previousWifiAttempt = 0;
 unsigned long previousMQTTAttempt = 0;
 boolean wifiConnected=false;
+unsigned long lastMQTTDisconnect=0; // last time MQTT was disconnected
 
-void connectedCallback(const char* client_id);
-void disconnectedCallback(const char* client_id);
+//void connectedCallback(const char* client_id);
+//void disconnectedCallback(const char* client_id);
 
 //PicoMQTT::Server mqttBroker;
-class MQTT: public PicoMQTT::Server {
+/*class MQTT: public PicoMQTT::Server {
     protected:
         void on_connected(const char * client_id) override {
           connectedCallback(client_id);
@@ -43,9 +44,11 @@ class MQTT: public PicoMQTT::Server {
          void on_disconnected(const char * client_id) override {
           disconnectedCallback(client_id);
         }
-} mqttBroker;
+} mqttBroker;*/
 
-shutterControl shuttercontrol(&mqttBroker);
+PubSubClient mqttClient(espClient);   // MQTT client
+//shutterControl shuttercontrol(&mqttBroker);
+shutterControl shuttercontrol(&mqttClient);
 
 // notes in the melody:
 int melody[] = {
@@ -143,7 +146,8 @@ void setup_wifi() {
 }
 
 // Callback for processing MQTT message
-void messageCallback(char* topic, char* payload, unsigned int length) {
+//void messageCallback(char* topic, char* payload, unsigned int length) {
+void messageCallback(char* topic, byte* payload, unsigned int length) {
 
   char *blind_name;
   char *dummy;
@@ -193,10 +197,14 @@ void messageCallback(char* topic, char* payload, unsigned int length) {
         
         free(payload_copy);
       } else if(strcmp(param,"tilt-state")==0) {//tilt changed
+        char* payload_copy = (char*)malloc(length+1);
+        memcpy(payload_copy,payload,length);
+        payload_copy[length] = '\0';
         String cmdstring = "statuspage.tilt";
         cmdstring+=itoa(blind_num,numberarray, 10);
         cmdstring+=".txt";
-        myNex.writeStr(cmdstring, payload);
+        myNex.writeStr(cmdstring, payload_copy);
+        free(payload_copy);
       }
     }
   }
@@ -215,7 +223,7 @@ void messageCallback(char* topic, char* payload, unsigned int length) {
 
 }
 
-void connectedCallback(const char* client_id){
+/*void connectedCallback(const char* client_id){
   webpage.lastCommand="connected:";
   webpage.lastCommand+=client_id;
 }
@@ -223,7 +231,7 @@ void connectedCallback(const char* client_id){
 void disconnectedCallback(const char* client_id){
   webpage.lastCommand="disconnected:";
   webpage.lastCommand+=client_id;
-}
+}*/
 
 /********************************************
 * M A I N   A R D U I N O   S E T U P 
@@ -265,6 +273,8 @@ void setup() {
   Serial.setDebugOutput(false);  //turn of debug output from the WiFi library
 
   setup_wifi();
+  mqttClient.setServer(cfg.mqtt_server,1883);
+  mqttClient.setCallback(messageCallback);
 
   //playMelody();
     
@@ -322,10 +332,10 @@ void setup() {
   httpserver.begin(); //Start the server
 
   //setup MQTT broker
-  mqttBroker.subscribe("#", [](char* topic, void* payload, size_t payload_size){
+ /* mqttBroker.subscribe("#", [](char* topic, void* payload, size_t payload_size){
     messageCallback(topic, (char*) payload, payload_size);
   });
-  mqttBroker.begin();
+  mqttBroker.begin();*/
 }
 
 String macToStr(const uint8_t* mac)
@@ -338,6 +348,53 @@ String macToStr(const uint8_t* mac)
   }
   return result;
 }
+
+/********************************
+* R E C O N N E C T   M Q T T 
+********************************/
+void mqtt_reconnect() {
+  #ifdef DEBUG
+    Serial.print("Attempting MQTT connection...");
+  #endif
+
+  unsigned long now = millis();
+ // if (lastMQTTDisconnect!=0 && lastMQTTDisconnect<now && (unsigned long)(now-lastMQTTDisconnect)<10000) return;
+  if (lastMQTTDisconnect!=0 && (unsigned long)(now-lastMQTTDisconnect)<10000) return;
+  lastMQTTDisconnect=now;
+  // Attempt to connect
+  
+  uint8_t mac[6];
+  WiFi.macAddress(mac);
+  String clientName(cfg.host_name);
+  clientName += "-";
+  clientName += macToStr(mac);
+  clientName += "-";
+  clientName += String(micros() & 0xff, 16);
+  
+  if (mqttClient.connect((char*)clientName.c_str(),"user","pass")) {
+    #ifdef DEBUG
+      Serial.println("connected");
+    #endif
+
+    // Once connected, publish an announcement...
+    //digitalWrite(SLED, LOW);   // Turn the Status Led on
+
+    // lastUpdate=0;
+    // checkSensors(); // send current sensors
+    // publishSensor();
+
+    // resubscribe
+    mqttClient.subscribe("#");  // listen to control for cover 1
+
+  } else {
+   // digitalWrite(SLED, HIGH);   // Turn the Status Led off
+    #ifdef DEBUG
+      Serial.print("failed, rc=");
+      Serial.print(mqttClient.state());
+    #endif
+  }
+}
+
 
 /******************************************
 * NEXTION CODE printh 23 02 54 00
@@ -378,7 +435,13 @@ void loop() {
     }
     webpage.lastWiFiConnect=now;  // Not used at the moment
     ArduinoOTA.handle(); // OTA first
-    mqttBroker.loop();
+    if (!mqttClient.loop()){
+      if((unsigned long)(now - previousMQTTAttempt) > MQTT_RETRY_INTERVAL)//every 10 sec
+      {
+        mqtt_reconnect();  
+        previousMQTTAttempt = now;    
+      }
+    }
     httpserver.handleClient();         // Web handling
   } else {
     if(wifiConnected) //just disconnected
