@@ -48,9 +48,6 @@ const char MAIN_page[] = R"#(
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-.tilt {
-  display: none;
-}
 .remote_control {
   display:grid;
   width: 40em;
@@ -208,6 +205,7 @@ function enableStyle(unique_title) {
   }
   css.insertRule(unique_title+' {display:none;}',0);
 }
+
 function disableStyle(unique_title) {
   var css=document.styleSheets[0];
   for(var i=0; i<css.cssRules.length; i++) {
@@ -244,11 +242,6 @@ function readMain() {
           document.getElementById("key"+i).style.color = 'black';
         }
       }
-
-      if (resp.tilting=="true")
-        disableStyle(".tilt");
-      else
-        enableStyle(".tilt");
     }
   };
   xhttp.open("GET", "readMain", true);
@@ -270,18 +263,6 @@ function readMain() {
   <div class="k2" id="key2"></div>
   <div class="b1"><button type="button" class="button" onmousedown="pushButton(1)" onmouseup="pushButton(11)">▲</button></div>
   <div class="b2"><button type="button" class="button" onmousedown="pushButton(2)" onmouseup="pushButton(12)">▼</button></div>
-</section>
-
-<h2>Shutters</h2>  
-<section class="status">  
-  <div class="description"></div>
-  <div class="s1">Shutter 1</div>
-  <div class="description">movement</div>
-  <div id="movement1" class="s1"></div>
-  <div class="description">position</div>
-  <div id="position1" class="s1"></div>
-  <div class="description tilt">Tilt</div>
-  <div id="tilt1" class="s1 tilt"></div>
 </section>
 
 <h2>Connectivity</h2>
@@ -486,6 +467,7 @@ function enableStyle(unique_title) {
   }
   css.insertRule(unique_title+' {display:none;}',0);
 }
+
 function disableStyle(unique_title) {
   var css=document.styleSheets[0];
   for(var i=0; i<css.cssRules.length; i++) {
@@ -497,19 +479,12 @@ function disableStyle(unique_title) {
   }
 }
 
-function sendData(field,value, param) {
+function sendData(field, value, param) {
   var request = new XMLHttpRequest();
   request.onreadystatechange = function() { 
     if (this.readyState == 4 && this.status == 200) {
     }
   };
-  
-  if (field=="tilt") {
-    if (value)
-      disableStyle(".tilt");
-    else
-      enableStyle(".tilt");
-  }
 
   request.open("GET", "updateField?field="+field+"&value="+value+"&param="+param, true);
   request.send();
@@ -517,13 +492,13 @@ function sendData(field,value, param) {
 
 function sendConfig()
 {
-
   var data={
       "host_name":"",
       "wifi_ssid1":"",
       "wifi_password1":"",
       "mqtt_server":"",
-      "blinds":[]};
+      "blinds":[]
+  };
 
   data.host_name= document.getElementById("host_name").value;
   data.wifi_ssid1= document.getElementById("wifi_ssid1").value;
@@ -544,10 +519,6 @@ function sendConfig()
   request.open("POST", "updateConfig");
   request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
   request.send(JSON.stringify(data));
-}
-
-function myFunction(index){
-  sendData("blind_names",this.value,index)
 }
 
 function readConfig() {

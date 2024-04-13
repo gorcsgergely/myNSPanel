@@ -90,6 +90,7 @@ void copyConfig(configuration* from,configuration* to) {
   strncpy(to->host_name,from->host_name,24);
   strncpy(to->wifi_ssid1,from->wifi_ssid1,24);
   strncpy(to->wifi_password1,from->wifi_password1,24);
+  strncpy(to->mqtt_server,from->mqtt_server,24);
   for (int i=0; i<NUMBER_OF_BLINDS;i++)
   {
     strncpy(to->blind_names[i], from->blind_names[i],15);
