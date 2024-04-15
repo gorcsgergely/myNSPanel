@@ -359,8 +359,9 @@ void mqtt_reconnect() {
 
   unsigned long now = millis();
  // if (lastMQTTDisconnect!=0 && lastMQTTDisconnect<now && (unsigned long)(now-lastMQTTDisconnect)<10000) return;
-  if (lastMQTTDisconnect!=0 && (unsigned long)(now-lastMQTTDisconnect)<10000) return;
-  lastMQTTDisconnect=now;
+ 
+ // if (lastMQTTDisconnect!=0 && (unsigned long)(now-lastMQTTDisconnect)<10000) return;
+  //lastMQTTDisconnect=now;
   // Attempt to connect
   
   uint8_t mac[6];
