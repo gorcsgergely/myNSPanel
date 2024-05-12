@@ -1,8 +1,8 @@
 # myNSPanel
 
-myNSPanel is a custom made small stand-alone home automation system, based on Sonoff NSPanel. Intended for controlling venetian blinds with tilt, shutters and other similar covers over wifi equipped with my custom wifi relay units. It does not require Home Assistant or any other external component and is easy to repurpose for other kind of automation tasks.
+myNSPanel is a custom made, small, stand-alone home automation system, based on Sonoff NSPanel. I use ir for controlling venetian blinds with tilt, shutters and other similar covers. It is controlling with my custom wifi relay units over MQTT. It does not require Home Assistant or any other external component and is easy to repurpose for other kind of automation tasks.
 
-The original design is for controlling up to 8 of these wifi Venetian Blind Controller devices. They are made out of the ESP32 based Shelly Plus 2PM or Sonoff Dual R3 smart relays, but can be ported to Sonoff 4CH or other ESP8266 based devices with some minor modifications. You can find the Venetian Blind Controller code in a separate repository. 
+The design is for controlling up to 8 of these wifi Shutter Controller devices. They are made out of the ESP32 based Shelly Plus 2PM or Sonoff Dual R3 smart relays, but can be ported to Sonoff 4CH or other ESP8266 based devices with some minor modifications. You can find the Shutter Controller code in a separate repository. 
 
 myNSPanel is a full custom development project for the EU version of Sonoff NSPanel. The heart of the Sonoff NSPanel is a ESP32-D0WD V3 with 4MB of flash memory connected to a Nextion display over serial port. There are several projects using Tasmota or ESPHome as the basis of similar applications, but this one is a completelly independent, from scratch solution. You have full control over the code, and you are not relying on any of these precompiled firmwares.
 
@@ -12,7 +12,7 @@ myNSPanel is a full custom development project for the EU version of Sonoff NSPa
 
 **Main features:**
 + Webserver to configure, see status, upload firmware and upload Nextion TFT file
-+ MQTT broker to connect MQTT clients to, so you don't need Mosquito or anything else. It should be working fine with 10 clients at least.
++ MQTT broker to connect MQTT clients to, so you don't need Mosquito or anything else. It should be working fine with 10 clients at least. (This has been changed, I eliminated the MQTT broker)
 + mDNS
 + Arduino OTA to upload code wireless
 + Fallback SSID and password
