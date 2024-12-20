@@ -28,9 +28,6 @@ const char _mqtt_server_[] = "192.168.0.89";
 #define WIFI_RETRY_INTERVAL 20000
 #define MQTT_RETRY_INTERVAL 10000
 
-//Ignore pulses shorter than 100ms
-#define _button_delay_ 100
-
 // Relay GPIO ports
 #define GPIO_DISPLAY_INVERTED 4  //Display enable
 
