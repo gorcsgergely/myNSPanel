@@ -12,7 +12,6 @@ class shutterControl{
         void closeCover(int selected_cover);
         void stopCover(int selected_cover);
     private:
-        //PicoMQTT::Server* mqttBroker;
         PubSubClient* mqttBroker;
 };
 

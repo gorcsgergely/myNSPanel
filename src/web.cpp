@@ -102,6 +102,7 @@ void WebPage::readMain() {
   _server->send(200, "text/plane", out); //Send values to client ajax request
 }
 
+//This function can be invoked through an ajax GET call with the button number
 void WebPage::pressButton() {
   String t_state = _server->arg("button"); //Refer  request.open("GET", "pressButton?button="+button, true);
   int btn=t_state.toInt();
@@ -142,6 +143,14 @@ void WebPage::pressButton() {
  _server->send(200, "text/plane", t_state); //Send web page
 }
 
+
+/*A new full configuration can be sent by ajax POST with the data object
+     {"host_name":"",
+      "wifi_ssid1":"",
+      "wifi_password1":"",
+      "mqtt_server":"",
+      "blinds":[]}
+  };*/
 void WebPage::updateConfig() {
 
   JsonDocument doc;
@@ -182,6 +191,8 @@ void WebPage::updateConfig() {
   Restart();
 }
 
+//A specific configuration item can be updated by ajax GET field, value, param
+//only saves it into web configuration structure. Invoking pressButton is needed to copy it to main cfg
 void WebPage::updateField() {
  String t_field = _server->arg("field");
  String t_value = _server->arg("value");
