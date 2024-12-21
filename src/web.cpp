@@ -24,14 +24,15 @@ int WebPage::WifiGetRssiAsQuality(int rssi)
   return quality;
 }
 
-void WebPage::timeDiff(char *buf,size_t len,unsigned long lastUpdate){
+//used to print out elapsed time since eventTime time
+void WebPage::timeDiff(char *buf,size_t len,unsigned long eventTime){
     //####d, ##:##:##0
     unsigned long t = millis();
-    if(lastUpdate>t) {
+    if(eventTime>t) {
       snprintf(buf,len,"N/A");
       return;
     }
-    t=(t-lastUpdate)/1000;  // Converted to difference in seconds
+    t=(t-eventTime)/1000;  // Converted to difference in seconds
 
     int d=t/(60*60*24);
     t=t%(60*60*24);
