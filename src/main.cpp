@@ -22,32 +22,16 @@
 #include "shutterControl.h"
 
 EasyNex myNex(Serial2); // Create an object of EasyNex class with the name < myNex > 
-configuration cfg,web_cfg;
+configuration cfg,web_cfg; // structure storing config settings
 WiFiClient espClient;         // WiFi
 httpServer httpserver;
 WebPage webpage=WebPage(httpserver.getServer());
 HTTPUpdateServer httpUpdater;
 unsigned long previousWifiAttempt = 0;
 unsigned long previousMQTTAttempt = 0;
-boolean wifiConnected=false;
+boolean wifiConnected=false;  // wifi status changes
 unsigned long lastMQTTDisconnect=0; // last time MQTT was disconnected
-
-//void connectedCallback(const char* client_id);
-//void disconnectedCallback(const char* client_id);
-
-//PicoMQTT::Server mqttBroker;
-/*class MQTT: public PicoMQTT::Server {
-    protected:
-        void on_connected(const char * client_id) override {
-          connectedCallback(client_id);
-        }
-         void on_disconnected(const char * client_id) override {
-          disconnectedCallback(client_id);
-        }
-} mqttBroker;*/
-
 PubSubClient mqttClient(espClient);   // MQTT client
-//shutterControl shuttercontrol(&mqttBroker);
 shutterControl shuttercontrol(&mqttClient);
 
 // notes in the melody:
@@ -102,18 +86,18 @@ void setup_wifi() {
   #endif
 
   WiFi.hostname(cfg.host_name);
-  WiFi.mode(WIFI_STA); // Pouze WiFi client!!
-  WiFi.begin(cfg.wifi_ssid1, cfg.wifi_password1);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(cfg.wifi_ssid1, cfg.wifi_password1); //use config values loaded from flash (EEPROM imitation)
 
   int i=0;
   while (WiFi.status() != WL_CONNECTED && i<60) {
     i++;
-    delay(500);
+    delay(500); //retry for 30 seconds
     #ifdef DEBUG
       Serial.print(".");
     #endif
   }
-  //Try fallback ssid and password
+  //Try default ssid and password if the ones from loaded config does not work, maybe there is a new router
   if (WiFi.status() != WL_CONNECTED && (strcmp(cfg.wifi_ssid1,_ssid1_)!=0 || strcmp(cfg.wifi_password1,_password1_)!=0))  {
     #ifdef DEBUG
        Serial.println();
@@ -132,10 +116,10 @@ void setup_wifi() {
         Serial.print(".");
       #endif
     }
-    return;
+    return; //not connected afterall TODO better error handling
   }
-  MDNS.begin(cfg.host_name);
-  MDNS.addService("http", "tcp", 80);
+  MDNS.begin(cfg.host_name); // user-freindly hostname.local can be used instead of IP address only
+  MDNS.addService("http", "tcp", 80); // Ensures that the mDNS will run after initialization. Without this call, the mDNS will be active for only a few minutes.
 
   #ifdef DEBUG
     Serial.println("");
@@ -145,8 +129,6 @@ void setup_wifi() {
   #endif
 }
 
-// Callback for processing MQTT message
-//void messageCallback(char* topic, char* payload, unsigned int length) {
 void messageCallback(char* topic, byte* payload, unsigned int length) {
 
   char *blind_name;
@@ -169,9 +151,9 @@ void messageCallback(char* topic, byte* payload, unsigned int length) {
   //parse blinds/blind_name/ topic
   if (strncmp(topic,"blinds/",7)==0)
   {
-    dummy = strtok_r(topic, "/", &topic);// blinds
+    dummy = strtok_r(topic, "/", &topic);// parsing a string into a sequence of tokens (thread safe) -> blinds
     blind_name = strtok_r(topic, "/", &topic);// blind name
-    param = strtok_r(topic, "/", &topic);//position or tilt
+    param = strtok_r(topic, "/", &topic);//position (state) or tilt (tilt-state)
  
     //find which blind number is it
     for(int i=0; i<NUMBER_OF_BLINDS;i++){
@@ -184,22 +166,24 @@ void messageCallback(char* topic, byte* payload, unsigned int length) {
     //found a matching name
     if(blind_num!=0){
       char numberarray[3];
-      if(strcmp(param,"state")==0){ //position changed
+      if(strcmp(param,"state")==0){ //position changed make a percentage string out of it
         char* payload_copy = (char*)malloc(length+2);
         memcpy(payload_copy,payload,length);
         payload_copy[length]='%';
         payload_copy[length+1] = '\0';
 
+        //update the right text label in the screen with tha string
         String cmdstring = "statuspage.pos";
         cmdstring+=itoa(blind_num,numberarray, 10);
         cmdstring+=".txt";
-        myNex.writeStr(cmdstring, payload_copy);
-        
+        myNex.writeStr(cmdstring, payload_copy);  
         free(payload_copy);
-      } else if(strcmp(param,"tilt-state")==0) {//tilt changed
+      } else if(strcmp(param,"tilt-state")==0) {//tilt changed make a number string
         char* payload_copy = (char*)malloc(length+1);
         memcpy(payload_copy,payload,length);
         payload_copy[length] = '\0';
+
+        //update the right text label on the screen
         String cmdstring = "statuspage.tilt";
         cmdstring+=itoa(blind_num,numberarray, 10);
         cmdstring+=".txt";
@@ -223,16 +207,6 @@ void messageCallback(char* topic, byte* payload, unsigned int length) {
 
 }
 
-/*void connectedCallback(const char* client_id){
-  webpage.lastCommand="connected:";
-  webpage.lastCommand+=client_id;
-}
-
-void disconnectedCallback(const char* client_id){
-  webpage.lastCommand="disconnected:";
-  webpage.lastCommand+=client_id;
-}*/
-
 /********************************************
 * M A I N   A R D U I N O   S E T U P 
 ********************************************/
@@ -253,8 +227,8 @@ void setup() {
   if (loadConfig()){
     webpage.crcStatus+="CRC config OK! ";
     myNex.writeStr("settings.wifi_ssid.txt",cfg.wifi_ssid1);
-   myNex.writeStr("settings.wifi_pass.txt",cfg.wifi_password1);
-   for(int i=0; i<NUMBER_OF_BLINDS;i++) //set blind name text on status page buttons
+    myNex.writeStr("settings.wifi_pass.txt",cfg.wifi_password1);
+    for(int i=0; i<NUMBER_OF_BLINDS;i++) //set blind name text on status page buttons
     {
       char numberarray[3];
       String textname="statuspage.button0";
@@ -358,11 +332,6 @@ void mqtt_reconnect() {
   #endif
 
   unsigned long now = millis();
- // if (lastMQTTDisconnect!=0 && lastMQTTDisconnect<now && (unsigned long)(now-lastMQTTDisconnect)<10000) return;
- 
- // if (lastMQTTDisconnect!=0 && (unsigned long)(now-lastMQTTDisconnect)<10000) return;
-  //lastMQTTDisconnect=now;
-  // Attempt to connect
   
   uint8_t mac[6];
   WiFi.macAddress(mac);
@@ -385,7 +354,7 @@ void mqtt_reconnect() {
     // publishSensor();
 
     // resubscribe
-    mqttClient.subscribe("#");  // listen to control for cover 1
+    mqttClient.subscribe("#"); 
 
   } else {
    // digitalWrite(SLED, HIGH);   // Turn the Status Led off
