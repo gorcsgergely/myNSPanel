@@ -89,10 +89,6 @@ const char MAIN_page[] = R"#(
     grid-template-columns: 6.3em 1fr 1fr;
     grid-template-rows: 2.5em 2.5em 2.5em 2.5em;
   }
-  .commands {
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-  }
 }
 html {
   box-sizing: border-box;
@@ -193,7 +189,7 @@ function pushButton(b) {
 setInterval(function() {
   // Call a function repetatively with 0.5 Second interval
   readMain();
-}, 500); //500mSeconds update rate
+}, 1000); //1000mSeconds update rate
 
 function enableStyle(unique_title) {
   var css=document.styleSheets[0];
@@ -255,14 +251,14 @@ function readMain() {
 <body>
 <header><h1 id="device"></h1></header>
 
-<h2>Sensors</h2>
+<h2>Buttons</h2>
 <section class="remote_control"> 
-  <div class="h1">Shutter 1 UP</div>
-  <div class="h2">Shutter 1 DOWN</div>
+  <div class="h1">Button 1</div>
+  <div class="h2">Button 2</div>
   <div class="k1" id="key1"></div>
   <div class="k2" id="key2"></div>
-  <div class="b1"><button type="button" class="button" onmousedown="pushButton(1)" onmouseup="pushButton(11)">▲</button></div>
-  <div class="b2"><button type="button" class="button" onmousedown="pushButton(2)" onmouseup="pushButton(12)">▼</button></div>
+  <div class="b1"><button type="button" class="button" onclick="pushButton(1)">▼</button></div>
+  <div class="b2"><button type="button" class="button" onclick="pushButton(2)">▼</button></div>
 </section>
 
 <h2>Connectivity</h2>
@@ -594,7 +590,7 @@ function readConfig() {
 )#";
 
 /*******************************************
-*
+* DISPLAY FILE UPLOAD
 ********************************************/
 const char TFTUPLOAD_page[] PROGMEM = R"#(
 <!DOCTYPE html>

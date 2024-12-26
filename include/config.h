@@ -10,10 +10,10 @@ const char _host_name_[] = "NSPanel";  // Has to be unique for each device
 // filters out noise (100 ms)
 const boolean button_press_delay = true;   
 #define _button_delay_ 100  
-#define NUMBER_OF_BLINDS 7
+#define NUMBER_OF_BLINDS 6
 
 //extern char _blind_names_[NUMBER_OF_BLINDS][16];
-const char _blind_names_[NUMBER_OF_BLINDS][16] ={"blind1","blind2","blind3","blind4","blind5","blind6","blind7"}; 
+const char _blind_names_[NUMBER_OF_BLINDS][16] ={"blind1","blind2","blind3","blind4","blind5","blind6"}; 
 
 // Change these for your WIFI, IP and MQTT
 //const char _ssid1_[] = "GG-2.4G";
@@ -46,6 +46,7 @@ const char _mqtt_server_[] = "192.168.0.89";
 #define KEY_PRESSED  LOW
 
 struct configuration {
+  
   char host_name[25];
   char wifi_ssid1[25];
   char wifi_password1[25];

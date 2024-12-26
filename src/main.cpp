@@ -30,6 +30,7 @@ HTTPUpdateServer httpUpdater;
 unsigned long previousWifiAttempt = 0;
 unsigned long previousMQTTAttempt = 0;
 boolean wifiConnected=false;  // wifi status changes
+boolean mqttConnected=false;  // mqtt status changes
 unsigned long lastMQTTDisconnect=0; // last time MQTT was disconnected
 PubSubClient mqttClient(espClient);   // MQTT client
 shutterControl shuttercontrol(&mqttClient);
@@ -228,6 +229,7 @@ void setup() {
     webpage.crcStatus+="CRC config OK! ";
     myNex.writeStr("settings.wifi_ssid.txt",cfg.wifi_ssid1);
     myNex.writeStr("settings.wifi_pass.txt",cfg.wifi_password1);
+    myNex.writeNum("blind_number",NUMBER_OF_BLINDS); //set the number of blinds to be visible in the display
     for(int i=0; i<NUMBER_OF_BLINDS;i++) //set blind name text on status page buttons
     {
       char numberarray[3];
@@ -302,7 +304,7 @@ void setup() {
   // Turn on the Web Server
   httpserver.setup();
   webpage.setup();
-  httpUpdater.setup(httpserver.getServer(),"/upgrade",WEB_UPGRADE_USER, WEB_UPGRADE_PASS);
+  httpUpdater.setup(httpserver.getServer(),"/upgrade"/*,WEB_UPGRADE_USER, WEB_UPGRADE_PASS*/);
   httpserver.begin(); //Start the server
 
   //setup MQTT broker
@@ -333,15 +335,15 @@ void mqtt_reconnect() {
 
   unsigned long now = millis();
   
-  uint8_t mac[6];
-  WiFi.macAddress(mac);
+ // uint8_t mac[6];
+ // WiFi.macAddress(mac);
   String clientName(cfg.host_name);
-  clientName += "-";
-  clientName += macToStr(mac);
-  clientName += "-";
-  clientName += String(micros() & 0xff, 16);
+ // clientName += "-";
+ // clientName += macToStr(mac);
+ // clientName += "-";
+ // clientName += String(micros() & 0xff, 16);
   
-  if (mqttClient.connect((char*)clientName.c_str(),"user","pass")) {
+  if (mqttClient.connect((char*)clientName.c_str()/*,"user","pass"*/)) {
     #ifdef DEBUG
       Serial.println("connected");
     #endif
@@ -374,7 +376,7 @@ void trigger0(){
   defaultConfig(&cfg);
   saveConfig();
   ESP.restart(); 
-  delay(10000);
+  delay(3000);
 }
 
 void trigger1(){
@@ -405,11 +407,24 @@ void loop() {
     }
     webpage.lastWiFiConnect=now;  // Not used at the moment
     ArduinoOTA.handle(); // OTA first
-    if (!mqttClient.loop()){
+    if(!mqttClient.connected()){
+      if(mqttConnected) //just disconnected
+      {
+        myNex.writeStr("settings.mqtt_server.txt","disconnected");
+        mqttConnected=false;
+      }
       if((unsigned long)(now - previousMQTTAttempt) > MQTT_RETRY_INTERVAL)//every 10 sec
       {
         mqtt_reconnect();  
         previousMQTTAttempt = now;    
+      }
+    } else{
+      if(mqttConnected==false){//just reconnected
+        mqttConnected=true;
+        myNex.writeStr("settings.mqtt_server.txt",cfg.mqtt_server);
+      }
+      if (mqttClient.loop()){
+        webpage.lastMQTTDisconnect = 0;
       }
     }
     httpserver.handleClient();         // Web handling
