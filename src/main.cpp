@@ -380,11 +380,43 @@ void trigger0(){
 }
 
 void trigger1(){
-  digitalWrite(GPIO_REL1, HIGH);  // Relay1 on
+  shuttercontrol.setScene(0);
+  //digitalWrite(GPIO_REL1, HIGH);  // Relay1 on
 }
 
 void trigger2(){
-  digitalWrite(GPIO_REL1, LOW);  // Relay1 off
+  shuttercontrol.setScene(1);
+  //digitalWrite(GPIO_REL1, LOW);  // Relay1 off
+}
+
+void trigger3(){
+  shuttercontrol.setScene(2);
+  //digitalWrite(GPIO_REL1, LOW);  // Relay1 off
+}
+
+void trigger4(){
+  shuttercontrol.setScene(3);
+  //digitalWrite(GPIO_REL1, LOW);  // Relay1 off
+}
+
+void trigger5(){
+  shuttercontrol.setScene(4);
+  //digitalWrite(GPIO_REL1, LOW);  // Relay1 off
+}
+
+void trigger6(){
+  shuttercontrol.setScene(5);
+  //digitalWrite(GPIO_REL1, LOW);  // Relay1 off
+}
+
+void trigger7(){
+  shuttercontrol.setScene(6);
+  //digitalWrite(GPIO_REL1, LOW);  // Relay1 off
+}
+
+void trigger8(){
+  shuttercontrol.setScene(7);
+  //digitalWrite(GPIO_REL1, LOW);  // Relay1 off
 }
 
 void displayPageChanged(int currentPageId){

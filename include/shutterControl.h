@@ -11,6 +11,7 @@ class shutterControl{
         void openCover(int selected_cover);
         void closeCover(int selected_cover);
         void stopCover(int selected_cover);
+        void setScene(int selected_scene);
     private:
         PubSubClient* mqttBroker;
 };

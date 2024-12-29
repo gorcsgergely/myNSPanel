@@ -46,3 +46,11 @@ void shutterControl::stopCover(int selected_cover){
     snprintf(payload,10,"%s","stop");
     mqttBroker->publish(topic, payload , false);
 }
+
+void shutterControl::setScene(int selected_scene){
+    char topic[40];
+    char payload[10];
+    snprintf(topic,50,"blinds/scene");
+    snprintf(payload,10,"%d",selected_scene);
+    mqttBroker->publish(topic, payload , false);
+}
