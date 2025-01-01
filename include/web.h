@@ -493,7 +493,8 @@ function sendConfig()
       "wifi_ssid1":"",
       "wifi_password1":"",
       "mqtt_server":"",
-      "blinds":[]
+      "blinds":[],
+      "scenes":[],
   };
 
   data.host_name= document.getElementById("host_name").value;
@@ -507,9 +508,16 @@ function sendConfig()
   data.blinds[i]= document.getElementById("blind_name_"+b_name_string).value;
  }
 
+ for(var i=0; i<10;i++)
+ {
+  s_name_string=i+1;
+  data.scenes[i]= document.getElementById("s"+s_name_string).value;
+}
+
   var request = new XMLHttpRequest();
   request.onreadystatechange = function() { 
     if (this.readyState == 4 && this.status == 200) {
+      location.href='/';
     }
   };
   request.open("POST", "updateConfig");
@@ -546,7 +554,13 @@ function readConfig() {
          container.appendChild(input);
          } 
          document.getElementById("blind_name_"+b_name_string).value = resp.blind_names[i];
-      }            
+      }        
+
+      for (i=0; i<resp.scenes.length;i++){
+        var s_name_string=i+1;
+        document.getElementById("s"+s_name_string).value = resp.scenes[i];
+      }
+    
     }
   };  
   xhttp.open("GET", "readConfig", true);
@@ -578,6 +592,20 @@ function readConfig() {
 <h2>Names</h2>
 <section class="container" id="name_container">
 </section>  
+
+<h2>Scenes</h2>
+<section class="container">
+  <label  class="description" for="s1">Scene#1 label</label> <input class="full" type="text" maxlength="15" name="s1" id="s1">
+  <label  class="description" for="s2">Scene#2 label</label> <input class="full" type="text" maxlength="15" name="s2" id="s2">
+  <label  class="description" for="s3">Scene#3 label</label> <input class="full" type="text" maxlength="15" name="s3" id="s3">
+  <label  class="description" for="s4">Scene#4 label</label> <input class="full" type="text" maxlength="15" name="s4" id="s4">
+  <label  class="description" for="s5">Scene#5 label</label> <input class="full" type="text" maxlength="15" name="s5" id="s5">
+  <label  class="description" for="s6">Scene#6 label</label> <input class="full" type="text" maxlength="15" name="s6" id="s6">
+  <label  class="description" for="s7">Scene#7 label</label> <input class="full" type="text" maxlength="15" name="s7" id="s7">
+  <label  class="description" for="s8">Scene#8 label</label> <input class="full" type="text" maxlength="15" name="s8" id="s8">
+  <label  class="description" for="s9">Scene#9 label</label> <input class="full" type="text" maxlength="15" name="s9" id="s9">
+  <label  class="description" for="s10">Scene#10 label</label> <input class="full" type="text" maxlength="15" name="s10" id="s10">
+</section> 
 
 <section class="commands">
 <button type="button" class="reset" onclick="location.href='/';">Back</button>

@@ -13,13 +13,14 @@ const boolean button_press_delay = true;
 #define NUMBER_OF_BLINDS 6
 
 //extern char _blind_names_[NUMBER_OF_BLINDS][16];
-const char _blind_names_[NUMBER_OF_BLINDS][16] ={"blind1","blind2","blind3","blind4","blind5","blind6"}; 
+const char _blind_names_[NUMBER_OF_BLINDS][16] ={"blind1","blind2","blind3","blind4","blind5","blind6"};
+const char _scene_names_[10][16] ={"scene1","scene2","scene3","scene4","scene5","scene6","scene7","scene8","scene9","scene10"};  
 
 // Change these for your WIFI, IP and MQTT
-//const char _ssid1_[] = "GG-2.4G";
-//const char _password1_[] = "FhmX8rjjezmd";
-const char _ssid1_[] = "home";
-const char _password1_[] = "12345678";
+const char _ssid1_[] = "GG-2.4G";
+const char _password1_[] = "FhmX8rjjezmd";
+//const char _ssid1_[] = "home";
+//const char _password1_[] = "12345678";
 const char WEB_UPGRADE_USER[] = "admin";
 const char WEB_UPGRADE_PASS[] = "admin";
 const char _mqtt_server_[] = "192.168.0.89";
@@ -52,6 +53,7 @@ struct configuration {
   char wifi_password1[25];
   char mqtt_server[25];
   char blind_names[NUMBER_OF_BLINDS][16];
+  char scenes[10][16];
 };
 
 extern configuration cfg,web_cfg;

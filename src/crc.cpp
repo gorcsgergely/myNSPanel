@@ -82,7 +82,11 @@ void defaultConfig(configuration* c) {
   strncpy(c->wifi_password1,_password1_,24);
   for (int i=0; i<NUMBER_OF_BLINDS;i++)
   {
-    strncpy(c->blind_names[i], _blind_names_[i],15);
+  strncpy(c->blind_names[i], _blind_names_[i],15);
+  }
+  for (int i=0; i<10;i++)
+  {
+    strncpy(c->scenes[i], _scene_names_[i],15);
   }
 }
 
@@ -94,5 +98,9 @@ void copyConfig(configuration* from,configuration* to) {
   for (int i=0; i<NUMBER_OF_BLINDS;i++)
   {
     strncpy(to->blind_names[i], from->blind_names[i],15);
+  }
+  for (int i=0; i<10;i++)
+  {
+    strncpy(to->scenes[i], from->scenes[i],15);
   }
 }

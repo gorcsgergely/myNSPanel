@@ -149,12 +149,17 @@ void messageCallback(char* topic, byte* payload, unsigned int length) {
   //webpage.lastCommand+=",  Payload:";
   webpage.lastCallback= millis();
 
-  //parse blinds/blind_name/ topic
-  if (strncmp(topic,"blinds/",7)==0)
+  //parse blinds/blind_name/state topic
+  if ((strncmp(topic,"blinds/",7)==0) && (strcmp(topic,"blinds/scene")!=0))
   {
     dummy = strtok_r(topic, "/", &topic);// parsing a string into a sequence of tokens (thread safe) -> blinds
     blind_name = strtok_r(topic, "/", &topic);// blind name
-    param = strtok_r(topic, "/", &topic);//position (state) or tilt (tilt-state)
+    if(blind_name == NULL) return;
+    dummy = strtok_r(topic, "/", &topic);// state
+    if(dummy == NULL) return;
+    if(strcmp(dummy,"state")!=0) return; //only interpreting state changes
+    param = strtok_r(topic, "/", &topic);//position or tilt
+    if(param == NULL) return;
  
     //find which blind number is it
     for(int i=0; i<NUMBER_OF_BLINDS;i++){
@@ -167,7 +172,7 @@ void messageCallback(char* topic, byte* payload, unsigned int length) {
     //found a matching name
     if(blind_num!=0){
       char numberarray[3];
-      if(strcmp(param,"state")==0){ //position changed make a percentage string out of it
+      if(strcmp(param,"position")==0){ //position changed make a percentage string out of it
         char* payload_copy = (char*)malloc(length+2);
         memcpy(payload_copy,payload,length);
         payload_copy[length]='%';
@@ -179,7 +184,7 @@ void messageCallback(char* topic, byte* payload, unsigned int length) {
         cmdstring+=".txt";
         myNex.writeStr(cmdstring, payload_copy);  
         free(payload_copy);
-      } else if(strcmp(param,"tilt-state")==0) {//tilt changed make a number string
+      } else if(strcmp(param,"tilt")==0) {//tilt changed make a number string
         char* payload_copy = (char*)malloc(length+1);
         memcpy(payload_copy,payload,length);
         payload_copy[length] = '\0';

@@ -184,6 +184,13 @@ void WebPage::updateConfig() {
     strncpy(web_cfg.blind_names[i], blind_name,15);
   }
 
+  JsonArray scenes = doc["scenes"];
+  for (int i=0; i<scenes.size(); i++)
+  {
+    const char* scene_name=scenes[i];
+    strncpy(web_cfg.scenes[i], scene_name,15);
+  }
+
   _server->send(200, "application/json", "{}");
 
   copyConfig(&web_cfg,&cfg);
@@ -223,6 +230,11 @@ void WebPage::readConfig() {
   JsonArray blinds = root["blind_names"].to<JsonArray>();
   for (int i=0; i<NUMBER_OF_BLINDS;i++){
    blinds.add(web_cfg.blind_names[i]);
+  }
+
+  JsonArray scenes = root["scenes"].to<JsonArray>();
+  for (int i=0; i<10;i++){
+   scenes.add(web_cfg.scenes[i]);
   }
  
   String out;
